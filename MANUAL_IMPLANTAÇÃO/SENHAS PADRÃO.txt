@@ -1,0 +1,16 @@
+SENHAS E USUÁRIOS PADRÃO DO SISTEMA FILA-APP-v2
+=================================================
+
+Após instalar o sistema e configurar a conexão com o banco de dados via instalador web, o sistema irá criar automaticamente os seguintes usuários com seus respectivos perfis e senhas iniciais:
+
+| USUÁRIO       | SENHA     | PERFIL (ROLE)     | DESCRIÇÃO                               |
+|---------------|-----------|-------------------|-----------------------------------------|
+| admin         | 123456    | SUPER_ADMIN       | Acesso total (configurações, usuários)  |
+| gerente       | 123456    | GERENTE           | Gerenciamento de relatórios e painéis   |
+| operador      | 123456    | OPERADOR          | Atendimento geral de senhas (Guichê/Sala)|
+| porteiro      | 123456    | PORTEIRO          | Controle de emissão manual de senhas    |
+| recepcao      | 123456    | RECEPCIONISTA     | Apoio e triagem de pacientes/clientes   |
+
+IMPORTANTE: 
+Por razões de segurança, utilize o usuário "admin" para fazer o primeiro login e altere as senhas de todos os usuários imediatamente através do painel "Gerar Contas" ou "Configurações Globais".
+Você também deve excluir as contas que não forem utilizadas na sua instituição.

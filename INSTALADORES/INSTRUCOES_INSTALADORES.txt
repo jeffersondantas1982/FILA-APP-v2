@@ -1,0 +1,17 @@
+﻿INSTRUÇÕES DE INSTALAÇÃO DE DEPENDÊNCIAS
+==========================================
+
+Para o correto funcionamento do sistema FILA-APP-v2, é estritamente recomendado utilizar as seguintes versões de banco de dados e ambiente de execução.
+
+1. Banco de Dados MySQL:
+   - Versão exigida: mysql-installer-community-8.0.45.0
+   - Link para download: https://downloads.mysql.com/archives/installer/ (Selecione a versão 8.0.45 em Product Version) ou https://dev.mysql.com/downloads/installer/
+   - Nota: Durante a instalação, defina sua senha do usuário "root". Será preciso informá-la depois na tela de configuração inicial do sistema.
+
+2. Node.js (Servidor Backend):
+   - Versão exigida: node-v24.12.0-x64
+   - Link para download direto (.msi): https://nodejs.org/dist/v24.12.0/node-v24.12.0-x64.msi
+   - Link alternativo (site oficial): https://nodejs.org/en/about/previous-releases
+   - Nota: Apenas prossiga com as configurações padrão do instalador. O Node.js já inclui o gerenciador de pacotes NPM, que será necessário para rodar o projeto.
+
+Coloque os instaladores baixados nesta pasta (INSTALADORES) caso deseje guardá-los para implementações futuras no mesmo ambiente ou offline.
