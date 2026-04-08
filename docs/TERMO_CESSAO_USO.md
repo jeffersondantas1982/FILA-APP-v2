@@ -2,7 +2,7 @@
 
 **CEDENTE:** JEFFERSON CARVALHO DANTAS, CPF 659.013.633-53, residente e domiciliado em São Luís - MA, doravante denominado AUTOR e PROPRIETÁRIO.
 
-**CESSIONÁRIA:** HOSPITAL PRESIDENTE VARGAS, CNPJ 02.973.240/0008-74, com sede em São Luís - MA, doravante denominada INSTITUIÇÃO.
+**CESSIONÁRIA:** UNIDADE DE SAÚDE (INSTITUIÇÃO), doravante denominada INSTITUIÇÃO.
 
 ---
 

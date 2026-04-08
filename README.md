@@ -1,6 +1,6 @@
 # FILA-APP 🏥
 
-**FILA-APP** é um sistema inteligente e moderno de gerenciamento de filas de atendimento, desenvolvido especificamente para o ambiente de saúde do **Hospital Presidente Vargas**. O sistema visa otimizar o fluxo de pacientes, reduzir a ansiedade na espera e fornecer métricas precisas para a gestão hospitalar.
+**FILA-APP** é um sistema inteligente e moderno de gerenciamento de filas de atendimento, desenvolvido especificamente para o ambiente de **Unidade de Saúde**. O sistema visa otimizar o fluxo de pacientes, reduzir a ansiedade na espera e fornecer métricas precisas para a gestão organizacional.
 
 ---
 
@@ -53,11 +53,9 @@
 
 ---
 
-## 👨‍💻 Autor e Instituição
-
 - **Autor**: Jefferson Carvalho Dantas
-- **Instituição**: Hospital Presidente Vargas, São Luís - MA
-- **Endereço**: Rua 5 de Janeiro, 166, Bairro Jordoa, São Luís/MA - CEP: 65040-450
+- **Instituição**: Unidade de Saúde (Genérico)
+
 
 ---
 
@@ -69,4 +67,4 @@ Contribuições são bem-vindas! Por favor, leia o arquivo [CONTRIBUTING.md](CON
 
 ## ⚖️ Licença
 
-Este projeto está licenciado sob a licença **GNU General Public License v3 (GPL v3)** - veja o arquivo [LICENSE](LICENSE) para detalhes.
+Este projeto está licenciado sob a licença **MIT** - veja o arquivo [LICENSE](LICENSE) para detalhes.

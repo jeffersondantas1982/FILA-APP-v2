@@ -1,7 +1,7 @@
 # Manual Completo do Sistema - FILA-APP
 
-## 🏥 Hospital Presidente Vargas
-### Departamento de Informática
+## 🏥 Unidade de Saúde
+### Gestão e Tecnologia
 
 ---
 
@@ -9,7 +9,7 @@
 
 > "Transformando a espera em cuidado, e a gestão em eficiência."
 
-O **FILA-APP** representa o ápice da inovação institucional no Hospital Presidente Vargas. Desenvolvido inteiramente por nossa equipe interna, o sistema nasceu da necessidade de humanizar o atendimento e otimizar a jornada do paciente, substituindo processos manuais por uma plataforma digital de alta performance.
+O **FILA-APP** representa o ápice da inovação na gestão de atendimentos em saúde. Desenvolvido para humanizar o atendimento e otimizar a jornada do paciente, o sistema substitui processos manuais por uma plataforma digital de alta performance.
 
 ### Diferenciais da Versão v1.0
 - **Controle em Tempo Real**: Monitoramento constante do fluxo de atendimento.
@@ -104,11 +104,11 @@ Pensado para o ambiente hospitalar real:
 
 Para manutenção, suporte ou dúvidas técnicas:
 
-- **Departamento de Informática - HPV**
+- **Suporte Técnico - FILA-APP**
 - **WhatsApp**: (98) 98102-5255
 - **Horário**: Segunda a Sexta, 08h às 18h.
 
 ---
 
 **FILA-APP v1.0**  
-*Hospital Presidente Vargas - Inovação e Saúde caminando juntos.*
+*Inovação e Saúde caminhando juntos.*

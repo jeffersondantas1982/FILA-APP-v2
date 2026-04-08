@@ -1,6 +1,6 @@
 # Guia de Contribuição 🤝
 
-Obrigado por se interessar em contribuir para o **FILA-APP**! Como um projeto mantido pela equipe de TI do Hospital Presidente Vargas e licenciado sob a GPL v3, valorizamos muito o apoio da comunidade para tornar o sistema mais eficiente e acessível.
+Obrigado por se interessar em contribuir para o **FILA-APP**! Como um projeto focado em eficiência e acessibilidade para o ambiente de saúde, valorizamos muito o apoio da comunidade.
 
 ## 🚀 Como posso contribuir?
 
@@ -26,4 +26,4 @@ Ao participar deste projeto, você concorda em manter um ambiente respeitoso, pr
 
 ## ⚖️ Aspectos Legais
 
-Ao contribuir para este projeto, você concorda que suas contribuições serão licenciadas sob a licença **GNU General Public License v3 (GPL v3)**.
+Ao contribuir para este projeto, você concorda que suas contribuições serão licenciadas sob a licença **MIT**.

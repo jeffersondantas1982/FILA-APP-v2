@@ -262,18 +262,14 @@ Ao criar ou atualizar a logo, verificar:
 
 ---
 
-## 📞 Créditos
-
-**Desenvolvido por**: Departamento de Informática do Hospital Presidente Vargas  
-**Licença**: GNU GPL v3  
+**Desenvolvido para**: Ambientes de Unidade de Saúde  
+**Licença**: MIT  
 **Versão**: 1.0  
-**Data**: Fevereiro 2026
+**Data**: Março 2026
 
 ---
 
-## 📄 Licença de Uso
-
-A logo do FILA-APP é propriedade do Hospital Presidente Vargas e está licenciada sob os termos da GNU General Public License v3 para uso exclusivo no ecossistema do sistema de gerenciamento de filas da instituição.
+A logo do FILA-APP é licenciada sob os termos da Licença MIT para uso no ecossistema do sistema de gerenciamento de filas.
 
 ---
 

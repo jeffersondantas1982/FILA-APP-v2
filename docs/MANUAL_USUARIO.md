@@ -14,7 +14,7 @@
 
 ## 🎯 Introdução
 
-O **FILA-APP** é um sistema completo de gerenciamento de filas de atendimento, desenvolvido para otimizar o fluxo de clientes em clínicas, hospitais, órgãos públicos e empresas.
+O **FILA-APP** é um sistema completo de gerenciamento de filas de atendimento, desenvolvido para otimizar o fluxo de clientes em unidades de saúde, clínicas, órgãos públicos e empresas em geral.
 
 ### Principais Funcionalidades
 - ✅ Emissão de senhas por setor
@@ -59,7 +59,7 @@ O **FILA-APP** é um sistema completo de gerenciamento de filas de atendimento, 
 
 ---
 
-## 🏥 Recepção
+## 🏢 Recepção e Triagem
 
 ### Acessar
 `http://localhost:3000/index.html`
@@ -448,6 +448,6 @@ Atualmente, use a função de impressão do navegador (Ctrl+P) e salve como PDF.
 ---
 
 **Versão**: 1.0  
-**Última Atualização**: Fevereiro 2026  
-**Licença**: GNU GPL v3  
-**Desenvolvido por**: Departamento de Informática do Hospital Presidente Vargas
+**Última Atualização**: Março 2026  
+**Licença**: MIT  
+**Desenvolvido para**: Gestão de Unidades de Saúde e Atendimento Geral
