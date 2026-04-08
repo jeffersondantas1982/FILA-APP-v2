@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOTEM DE AUTOATENDIMENTO</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f1f5f9;
+            --text: #1e293b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            /* Permite crescer se necessário (scroll no mobile) */
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            /* overflow: hidden; Removed to allow scrolling on small screens */
+        }
+
+        .grid-totem {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            /* Force 1 column on small mobile, 2+ on tablet/desktop */
+            gap: 20px;
+            width: 100%;
+            max-width: 1600px;
+            margin: 0 auto;
+            align-content: center;
+            flex-grow: 1;
+        }
+
+        @media (max-width: 320px) {
+            .grid-totem {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .sector-card {
+            background: white;
+            border-radius: 20px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            border: none;
+            width: 100%;
+            min-height: 220px;
+        }
+
+        .sector-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.25);
+        }
+
+        .sector-card:active {
+            transform: scale(0.95);
+        }
+
+        .sector-card h2 {
+            font-size: 1.1rem;
+            /* Mais compacto para evitar overflow em tablets vertical */
+            font-weight: 800;
+            color: white;
+            z-index: 2;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            line-height: 1.1;
+            word-wrap: break-word;
+        }
+
+        .sector-card p {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+            margin-top: 4px;
+            z-index: 2;
+        }
+
+        .totem-stats {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+            z-index: 2;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .totem-stat-item {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 5px 10px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 80px;
+        }
+
+        .totem-stat-label {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-transform: uppercase;
+        }
+
+        .totem-stat-value {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: white;
+            line-height: 1;
+        }
+
+        .totem-active {
+            margin-top: 12px;
+            padding: 5px 12px;
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: 20px;
+            font-weight: 600;
+            width: 85%;
+            z-index: 2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .totem-active span {
+            color: #fff;
+            font-size: 0.9rem;
+            font-weight: 800;
+        }
+
+        .totem-active .status-label {
+            display: inline;
+        }
+
+        .totem-stats {
+            pointer-events: none;
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            z-index: 2;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .totem-buttons {
+            display: flex;
+            flex-direction: column;
+            /* Stack on mobile */
+            gap: 10px;
+            width: 100%;
+            margin-top: 15px;
+            z-index: 3;
+        }
+
+        @media (min-width: 480px) {
+            .totem-buttons {
+                flex-direction: row;
+                /* Side-by-side on larger screens */
+            }
+        }
+
+        .totem-btn {
+            flex: 1;
+            padding: 12px 5px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .totem-btn i {
+            font-size: 1.2rem;
+        }
+
+        .totem-btn-normal {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .totem-btn-normal:active {
+            transform: scale(0.95);
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .totem-btn-priority {
+            background: #f59e0b;
+            /* Amber/Gold */
+            color: #000;
+        }
+
+        .totem-btn-priority:active {
+            transform: scale(0.95);
+            background: #fbbf24;
+        }
+
+        /* Responsividade para Telas Maiores (Tablets grandes e Desktops) */
+        @media (min-width: 768px) {
+            .grid-totem {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 30px;
+            }
+
+            .sector-card {
+                padding: 40px;
+                border-radius: 24px;
+            }
+
+            .sector-card h2 {
+                font-size: 2rem;
+            }
+
+            .sector-card p {
+                font-size: 1.2rem;
+            }
+        }
+
+        @media (min-width: 1200px) {
+            .grid-totem {
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            }
+
+            .sector-card h2 {
+                font-size: 2.5rem;
+            }
+
+            .sector-card p {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Cores vibrantes para os cards */
+        .color-1 {
+            background: linear-gradient(135deg, #FF6B6B 0%, #EE5253 100%);
+        }
+
+        .color-2 {
+            background: linear-gradient(135deg, #4834d4 0%, #686de0 100%);
+        }
+
+        .color-3 {
+            background: linear-gradient(135deg, #6ab04c 0%, #badc58 100%);
+        }
+
+        .color-4 {
+            background: linear-gradient(135deg, #f0932b 0%, #ffbe76 100%);
+        }
+
+        .color-5 {
+            background: linear-gradient(135deg, #22a6b3 0%, #7ed6df 100%);
+        }
+
+        .color-6 {
+            background: linear-gradient(135deg, #be2edd 0%, #e056fd 100%);
+        }
+
+        .color-7 {
+            background: linear-gradient(135deg, #eb4d4b 0%, #ff7979 100%);
+        }
+
+        .color-8 {
+            background: linear-gradient(135deg, #4834d4 0%, #30336b 100%);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 60px;
+            border-radius: 30px;
+            text-align: center;
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .ticket-number {
+            font-size: 6rem;
+            font-weight: 900;
+            color: #334155;
+            display: block;
+            margin: 20px 0;
+        }
+
+        .ticket-info {
+            font-size: 1.8rem;
+            color: #64748b;
+        }
+
+        @keyframes popIn {
+            from {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* Overlay para Iniciar Tela Cheia */
+        #start-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0f172a;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            color: white;
+            cursor: pointer;
+        }
+
+        #start-overlay h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        #start-overlay p {
+            font-size: 1.5rem;
+            color: #94a3b8;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        /* ESTILOS DE IMPRESSÃO (TÉRMICA) */
+        @media print {
+            body * {
+                visibility: hidden !important;
+            }
+
+            #printable-ticket,
+            #printable-ticket * {
+                visibility: visible !important;
+            }
+
+            #printable-ticket {
+                display: block !important;
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                text-align: center;
+                background: white !important;
+                color: black !important;
+            }
+
+            @page {
+                margin: 0;
+                size: auto;
+            }
+        }
+
+        #printable-ticket {
+            display: none;
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        fetch('/api/me').then(res => {
+            if (!res.ok) window.location.href = '/login.html';
+        });
+        function logout() {
+            if (confirm('Tem certeza que deseja encerrar a sessão do Totem?')) {
+                fetch('/api/logout', { method: 'POST' }).then(() => window.location.href = '/login.html');
+            }
+        }
+    </script>
+
+    <!-- Botão de Sair Discreto -->
+    <button onclick="logout()"
+        style="position: fixed; top: 20px; right: 20px; z-index: 10000; background: rgba(239, 68, 68, 0.8); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        SAIR
+    </button>
+
+    <!-- Overlay de Início -->
+    <div id="start-overlay" onclick="startTotem()">
+        <h1 id="institution-name">FILA-APP</h1>
+        <p>Toque na tela para entrar em modo tela cheia</p>
+    </div>
+
+
+    <div class="grid-totem" id="sectors-grid">
+        <!-- Cards serão gerados aqui -->
+    </div>
+
+    <!-- MODAL DE SUCESSO -->
+    <div id="ticket-modal" class="modal">
+        <div class="modal-content">
+            <h2 style="font-size: 2rem; color: #64748b;">SUA SENHA É:</h2>
+            <span id="modal-number" class="ticket-number">---</span>
+            <p id="modal-sector" class="ticket-info">---</p>
+
+            <div id="modal-print-section"
+                style="display: none; margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 30px;">
+                <button onclick="handleModalPrint()" class="totem-btn totem-btn-priority"
+                    style="width: 100%; max-width: 400px; margin: 0 auto; padding: 20px; font-size: 1.5rem;">
+                    <i class="fas fa-print"></i>
+                    IMPRIMIR COMPROVANTE
+                </button>
+            </div>
+
+            <p style="margin-top: 30px; color: #94a3b8; font-weight: 600;">AGUARDE SER CHAMADO NO PAINEL</p>
+        </div>
+    </div>
+
+    <!-- TICKET DE IMPRESSÃO (Oculto) -->
+    <div id="printable-ticket">
+        <h2 id="print-institution"
+            style="font-size: 1.2rem; border-bottom: 1px dashed #000; padding-bottom: 5px; margin-bottom: 10px;">
+            FILA-APP
+        </h2>
+        <div style="font-size: 0.9rem;">SENHA DE ATENDIMENTO</div>
+        <div id="print-number" style="font-size: 3rem; font-weight: bold; margin: 10px 0;">---</div>
+        <div id="print-sector" style="font-size: 1rem; font-weight: bold;">---</div>
+        <div id="print-type" style="font-size: 0.8rem; margin-top: 5px; text-transform: uppercase;">---</div>
+        <div style="border-top: 1px dashed #000; margin-top: 15px; padding-top: 5px; font-size: 0.7rem;">
+            <div id="print-date">--/--/---- --:--</div>
+        </div>
+    </div>
+
+    <script>
+        let printEnabled = false;
+
+        function startTotem() {
+            const elem = document.documentElement;
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+            } else if (elem.webkitRequestFullscreen) { /* Safari */
+                elem.webkitRequestFullscreen();
+            } else if (elem.msRequestFullscreen) { /* IE11 */
+                elem.msRequestFullscreen();
+            }
+            document.getElementById('start-overlay').style.display = 'none';
+        }
+
+        const colors = ['color-1', 'color-2', 'color-3', 'color-4', 'color-5', 'color-6', 'color-7', 'color-8'];
+
+        async function loadSectors() {
+            const res = await fetch('/api/sectors');
+            const data = await res.json();
+            const grid = document.getElementById('sectors-grid');
+            grid.innerHTML = '';
+
+            // Filtrar apenas setores ativos
+            const sectors = data.filter(s => s.active === 1 || s.active === true);
+
+            sectors.forEach((s, index) => {
+                const card = document.createElement('div');
+                const colorClass = colors[index % colors.length]; // Cicla entre as cores
+                card.className = `sector-card ${colorClass}`;
+
+                card.innerHTML = `
+                    <h2>${s.name}</h2>
+                    <p>${s.room || ''}</p>
+                    
+                    <div class="totem-active">
+                        <span class="status-label">Em Atendimento:</span>
+                        <span id="stat-current-${s.id}">--</span>
+                    </div>
+
+                    <div class="totem-stats">
+                        <div class="totem-stat-item" title="Aguardando atendimento">
+                            <span class="totem-stat-label">Fila</span>
+                            <span id="stat-waiting-${s.id}" class="totem-stat-value">0</span>
+                        </div>
+                        <div class="totem-stat-item" title="Atendimentos concluídos hoje">
+                            <span class="totem-stat-label">Atendidos</span>
+                            <span id="stat-completed-${s.id}" class="totem-stat-value">0</span>
+                        </div>
+                    </div>
+
+                    <div class="totem-buttons">
+                        <button class="totem-btn totem-btn-normal" onclick="generateTicket(${s.id}, '${s.name}', 'normal')">
+                            <i class="fas fa-user"></i>
+                            Normal
+                        </button>
+                        <button class="totem-btn totem-btn-priority" onclick="generateTicket(${s.id}, '${s.name}', 'priority')">
+                            <i class="fas fa-wheelchair"></i>
+                            Prioridade
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+
+            // Iniciar atualização de stats
+            updateStats();
+            setInterval(updateStats, 5000);
+        }
+
+        async function updateStats() {
+            try {
+                const res = await fetch('/api/tickets/stats');
+                const stats = await res.json();
+
+                // Iterar sobre as chaves do objeto stats
+                for (const [sectorId, data] of Object.entries(stats)) {
+                    const waitingEl = document.getElementById(`stat-waiting-${sectorId}`);
+                    const completedEl = document.getElementById(`stat-completed-${sectorId}`);
+                    const currentEl = document.getElementById(`stat-current-${sectorId}`);
+
+                    if (waitingEl) waitingEl.textContent = data.waiting;
+                    if (completedEl) completedEl.textContent = data.completed;
+
+                    if (currentEl) {
+                        if (data.active > 0) {
+                            currentEl.textContent = data.current;
+                            currentEl.parentElement.style.opacity = '1';
+                        } else if (data.has_operator) {
+                            currentEl.textContent = 'Livre';
+                            currentEl.parentElement.style.opacity = '1';
+                        } else {
+                            currentEl.textContent = '--';
+                            currentEl.parentElement.style.opacity = '0.5';
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error("Erro ao atualizar stats:", error);
+            }
+        }
+
+        async function generateTicket(sectorId, sectorName, type = 'normal') {
+            try {
+                // Pegar próximo número baseado no tipo
+                const nextRes = await fetch(`/api/tickets/next/${sectorId}?type=${type}`);
+                const nextData = await nextRes.json();
+
+                if (!nextData.nextNumber) throw new Error('Erro ao calcular número');
+
+                const res = await fetch('/api/tickets', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        number: nextData.nextNumber,
+                        sector_id: sectorId,
+                        type: type
+                    })
+                });
+
+                if (res.ok) {
+                    try {
+                        showModal(nextData.nextNumber, sectorName, type);
+                    } catch (e) { console.error("Modal error:", e); }
+
+                    setTimeout(updateStats, 1000);
+                } else {
+                    const error = await res.json();
+                    alert('Erro ao emitir senha: ' + (error.error || 'Erro desconhecido'));
+                }
+            } catch (err) {
+                console.error("Generate Ticket Error:", err);
+                alert('Erro ao processar senha: ' + err.message);
+            }
+        }
+
+        let modalTimeout = null;
+        let lastGeneratedTicket = null;
+
+        function showModal(number, sector, type) {
+            const modal = document.getElementById('ticket-modal');
+            document.getElementById('modal-number').textContent = number;
+            document.getElementById('modal-sector').textContent = sector;
+
+            lastGeneratedTicket = { number, sector, type };
+
+            const printSection = document.getElementById('modal-print-section');
+            if (printEnabled) {
+                printSection.style.display = 'block';
+            } else {
+                printSection.style.display = 'none';
+            }
+
+            modal.style.display = 'flex';
+
+            if (modalTimeout) clearTimeout(modalTimeout);
+
+            // Fecha e reseta após 5 segundos se tiver impressão, ou 3 se não tiver
+            const delay = printEnabled ? 6000 : 3000;
+            modalTimeout = setTimeout(() => {
+                modal.style.display = 'none';
+            }, delay);
+        }
+
+        function handleModalPrint() {
+            if (lastGeneratedTicket) {
+                printTicket(lastGeneratedTicket.number, lastGeneratedTicket.sector, lastGeneratedTicket.type);
+                // Fecha o modal logo após imprimir
+                document.getElementById('ticket-modal').style.display = 'none';
+            }
+        }
+
+        async function printTicket(number, sector, type) {
+            try {
+                document.getElementById('print-number').textContent = number;
+                document.getElementById('print-sector').textContent = sector;
+                document.getElementById('print-type').textContent = type === 'priority' ? 'Prioritário' : 'Normal';
+                document.getElementById('print-date').textContent = new Date().toLocaleString('pt-BR');
+
+                const printable = document.getElementById('printable-ticket');
+                printable.style.display = 'block';
+                // Wait a tiny bit for the DOM update
+                setTimeout(() => {
+                    window.print();
+                    printable.style.display = 'none';
+                }, 100);
+            } catch (e) {
+                console.error("Print error:", e);
+            }
+        }
+
+        async function loadSettings() {
+            try {
+                const res = await fetch('/api/settings');
+                const settings = await res.json();
+                if (settings.institution_name) {
+                    const name = settings.institution_name.toUpperCase();
+                    if (document.getElementById('institution-name')) document.getElementById('institution-name').textContent = name;
+                    if (document.getElementById('print-institution')) document.getElementById('print-institution').textContent = name;
+                    document.title = `${name} | TOTEM`;
+                }
+                printEnabled = settings.print_enabled == 1;
+            } catch (e) {
+                console.error("Load settings error:", e);
+            }
+        }
+
+        loadSettings();
+        loadSectors();
+    </script>
+</body>
+
+</html>

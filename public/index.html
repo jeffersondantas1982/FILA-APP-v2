@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recepção | FILA-APP</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* ESTILOS DE IMPRESSÃO (TÉRMICA) */
+        @media print {
+            body * {
+                visibility: hidden !important;
+            }
+
+            #printable-ticket,
+            #printable-ticket * {
+                visibility: visible !important;
+            }
+
+            #printable-ticket {
+                display: block !important;
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                text-align: center;
+                background: white !important;
+                color: black !important;
+            }
+
+            @page {
+                margin: 0;
+                size: auto;
+            }
+        }
+
+        #printable-ticket {
+            display: none;
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        let currentUser = null;
+        fetch('/api/me').then(res => {
+            if (!res.ok) window.location.href = '/login.html';
+            return res.json();
+        }).then(user => {
+            currentUser = user;
+            document.getElementById('user-name').textContent = user.username;
+            document.getElementById('user-initial').textContent = user.username.charAt(0).toUpperCase();
+
+            // ACCESS CONTROL: Hide Admin features if not authorized
+            if (user.role !== 'SUPER_ADMIN' && user.role !== 'GERENTE') {
+                const adminElements = document.querySelectorAll('.admin-only');
+                adminElements.forEach(el => el.style.display = 'none');
+
+                // Adjust layout if needed (e.g., make 'Emitir Senha' full width)
+                document.getElementById('ticket-card').parentElement.classList.remove('grid-2');
+            }
+        });
+
+        function logout() {
+            if (confirm('Deseja realmente sair?')) {
+                fetch('/api/logout', { method: 'POST' }).then(() => window.location.href = '/login.html');
+            }
+        }
+    </script>
+
+    <!-- TICKET DE IMPRESSÃO (Oculto) -->
+    <div id="printable-ticket">
+        <h2 id="print-institution"
+            style="font-size: 1.2rem; border-bottom: 1px dashed #000; padding-bottom: 5px; margin-bottom: 10px;">
+            FILA-APP
+        </h2>
+        <div style="font-size: 0.9rem;">SENHA DE ATENDIMENTO</div>
+        <div id="print-number" style="font-size: 3rem; font-weight: bold; margin: 10px 0;">---</div>
+        <div id="print-sector" style="font-size: 1rem; font-weight: bold;">---</div>
+        <div id="print-type" style="font-size: 0.8rem; margin-top: 5px; text-transform: uppercase;">---</div>
+        <div style="border-top: 1px dashed #000; margin-top: 15px; padding-top: 5px; font-size: 0.7rem;">
+            <div id="print-date">--/--/---- --:--</div>
+        </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <i class="fas fa-ticket-alt"></i>
+            <h2>FILA-APP</h2>
+        </div>
+        <div style="padding: 20px 0;">
+            <a href="/dashboard.html" class="menu-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="/index.html" class="menu-item active">
+                <i class="fas fa-desktop"></i>
+                <span>Recepção</span>
+            </a>
+            <a href="/operator.html" target="_blank" class="menu-item">
+                <i class="fas fa-headset"></i>
+                <span>Painel Operador</span>
+            </a>
+            <a href="/totem.html" target="_blank" class="menu-item">
+                <i class="fas fa-tablet-alt"></i>
+                <span>Totem</span>
+            </a>
+            <a href="/panel.html" target="_blank" class="menu-item">
+                <i class="fas fa-tv"></i>
+                <span>Painel TV</span>
+            </a>
+        </div>
+        <div style="padding: 20px 0; border-top: 1px solid rgba(255,255,255,0.1);">
+            <div
+                style="padding: 0 20px 10px; font-size: 0.75rem; text-transform: uppercase; color: rgba(255, 255, 255, 0.5); font-weight: 600; letter-spacing: 0.5px;">
+                Administração</div>
+            <a href="/settings.html" class="menu-item">
+                <i class="fas fa-cog"></i>
+                <span>Configurações</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+        <h1><i class="fas fa-desktop"></i> Recepção</h1>
+        <div class="user-menu" onclick="logout()">
+            <div class="user-avatar" id="user-initial">R</div>
+            <div>
+                <div style="font-weight: 600; font-size: 0.9rem;" id="user-name">Recepção</div>
+            </div>
+            <i class="fas fa-sign-out-alt" style="color: var(--danger);"></i>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <div class="grid-2">
+            <!-- EMITIR SENHA -->
+            <div class="card" id="ticket-card">
+                <div class="card-header">
+                    <i class="fas fa-ticket-alt"></i>
+                    <h2>Emitir Senha</h2>
+                </div>
+                <form id="ticket-form">
+                    <div class="form-group">
+                        <label><i class="fas fa-building"></i> Setor</label>
+                        <select id="sector-select" required>
+                            <option value="">Selecione o setor...</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="patient-name-group" style="display: none;">
+                        <label><i class="fas fa-user"></i> Nome do Paciente</label>
+                        <input type="text" id="patient-name-input" placeholder="Digite o nome completo do paciente"
+                            style="padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 15px;">
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        <i class="fas fa-plus-circle"></i>
+                        Gerar Senha
+                    </button>
+                </form>
+
+                <!-- Última Senha Gerada -->
+                <div id="last-ticket" style="display: none; margin-top: 20px;">
+                    <div class="ticket-display">
+                        <h3>Senha Gerada</h3>
+                        <div class="number" id="ticket-number">---</div>
+                        <div class="sector" id="ticket-sector">---</div>
+                        <div id="ticket-patient-name"
+                            style="color: #10b981; font-size: 1.2rem; font-weight: 600; margin-top: 10px;"></div>
+                        <div class="timestamp" id="ticket-time"></div>
+                        <button class="btn btn-primary" onclick="printTicket()" style="margin-top: 15px;">
+                            <i class="fas fa-print"></i> Imprimir
+                        </button>
+                    </div>
+                </div>
+            </div> <!-- ÚLTIMAS SENHAS GERADAS -->
+            <div class="card" id="recent-tickets-card" style="display: none;">
+                <div class="card-header">
+                    <i class="fas fa-history"></i>
+                    <h2>Senhas Recentes</h2>
+                </div>
+                <div class="table-responsive">
+                    <table class="table" style="width: 100%;">
+                        <thead>
+                            <tr>
+                                <th>Senha</th>
+                                <th>Setor</th>
+                                <th style="text-align: right;">Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recent-tickets-list">
+                            <!-- JS will populate -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            let printEnabled = false;
+            let currentSectors = [];
+
+            async function loadSectors() {
+                try {
+                    const res = await fetch('/api/sectors');
+                    const data = await res.json();
+
+                    const select = document.getElementById('sector-select');
+                    select.innerHTML = '<option value="">Selecione o setor...</option>';
+
+                    if (Array.isArray(data)) {
+                        currentSectors = data.filter(s => s.active === 1 || s.active === true);
+                        currentSectors.forEach(s => {
+                            select.innerHTML += `<option value="${s.id}">${s.name} - ${s.room || 'S/N'}</option>`;
+                        });
+                    }
+                } catch (e) {
+                    console.error("Erro ao carregar setores:", e);
+                }
+            }
+
+            // Show/hide patient name field based on sector configuration
+            document.getElementById('sector-select').addEventListener('change', (e) => {
+                const sectorId = e.target.value;
+                const sector = currentSectors.find(s => s.id == sectorId);
+
+                const nameGroup = document.getElementById('patient-name-group');
+                const nameInput = document.getElementById('patient-name-input');
+
+                if (sector && sector.collect_patient_name == 1) {
+                    nameGroup.style.display = 'block';
+                    nameInput.value = '';  // Clear previous value
+                } else {
+                    nameGroup.style.display = 'none';
+                    nameInput.value = '';  // Clear value when hiding
+                }
+            });
+
+            document.getElementById('ticket-form').onsubmit = async (e) => {
+                e.preventDefault();
+                try {
+                    const sectorId = document.getElementById('sector-select').value;
+                    if (!sectorId) {
+                        alert('Por favor, selecione um setor');
+                        return;
+                    }
+
+                    const nextRes = await fetch(`/api/tickets/next/${sectorId}`);
+                    const nextData = await nextRes.json();
+
+                    const patientName = document.getElementById('patient-name-input').value.trim();
+
+                    const res = await fetch('/api/tickets', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            number: nextData.nextNumber,
+                            sector_id: sectorId,
+                            patient_name: patientName || null
+                        })
+                    });
+
+                    if (!res.ok) throw new Error('Falha ao gerar senha');
+
+                    const ticket = await res.json();
+
+                    document.getElementById('last-ticket').style.display = 'block';
+                    document.getElementById('ticket-number').textContent = ticket.number;
+                    document.getElementById('ticket-sector').textContent = ticket.sector_name || 'Setor';
+                    document.getElementById('ticket-patient-name').textContent = ticket.patient_name || '';
+
+                    // Add to recent tickets
+                    const sectorSelect = document.getElementById('sector-select');
+                    const sectorName = sectorSelect.options[sectorSelect.selectedIndex].text;
+                    addToRecentTickets(ticket.number, sectorName);
+
+                    // Clear input
+                    document.getElementById('patient-name-input').value = '';
+
+                } catch (error) {
+                    console.error("Erro ao gerar senha", error);
+                    alert('Erro ao gerar senha');
+                }
+            };
+
+            let lastGeneratedReceptionTicket = null;
+            let recentTickets = [];
+
+            function addToRecentTickets(number, sector) {
+                recentTickets.unshift({ number, sector });
+                if (recentTickets.length > 5) recentTickets.pop();
+
+                renderRecentTickets();
+            }
+
+            function renderRecentTickets() {
+                const list = document.getElementById('recent-tickets-list');
+                const card = document.getElementById('recent-tickets-card');
+
+                if (recentTickets.length === 0) {
+                    card.style.display = 'none';
+                    return;
+                }
+
+                card.style.display = 'block';
+                list.innerHTML = '';
+
+                recentTickets.forEach((t, index) => {
+                    list.innerHTML += `
+                        <tr>
+                            <td style="font-weight: 800; color: var(--primary);">${t.number}</td>
+                            <td style="font-size: 0.85rem;">${t.sector}</td>
+                            <td style="text-align: right;">
+                                <button onclick="printTicket('${t.number}', '${t.sector}')" class="btn btn-sm btn-secondary" title="Reimprimir">
+                                    <i class="fas fa-print"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+
+            function handleReceptionPrint() {
+                if (lastGeneratedReceptionTicket) {
+                    printTicket(lastGeneratedReceptionTicket.number, lastGeneratedReceptionTicket.sector);
+                }
+            }
+
+            async function printTicket(number, sector) {
+                try {
+                    document.getElementById('print-number').textContent = number;
+                    document.getElementById('print-sector').textContent = sector;
+                    document.getElementById('print-type').textContent = 'Normal'; // Recepção gera normal por padrão aqui
+                    document.getElementById('print-date').textContent = new Date().toLocaleString('pt-BR');
+
+                    const printable = document.getElementById('printable-ticket');
+                    printable.style.display = 'block';
+                    setTimeout(() => {
+                        window.print();
+                        printable.style.display = 'none';
+                    }, 100);
+                } catch (e) {
+                    console.error("Print error:", e);
+                }
+            }
+
+            async function loadSettings() {
+                const res = await fetch('/api/settings');
+                const settings = await res.json();
+                if (settings.institution_name) {
+                    document.getElementById('print-institution').textContent = settings.institution_name.toUpperCase();
+                }
+                printEnabled = settings.print_enabled == 1;
+            }
+
+            async function deleteSector(id) {
+                if (!confirm('Deletar este setor?')) return;
+                const res = await fetch(`/api/sectors/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    alert('Setor deletado!');
+                    loadSectors();
+                } else {
+                    alert('Erro ao deletar (Permissão negada?)');
+                }
+            }
+
+            loadSectors();
+            loadSettings();
+        </script>
+</body>
+
+</html>

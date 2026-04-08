@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel do Operador | FILA-APP</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .priority-tag {
+            background-color: #fef3c7;
+            color: #92400e;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            margin-left: 10px;
+            font-weight: 700;
+        }
+
+        .priority-item {
+            border-left: 4px solid #f59e0b !important;
+            background: rgba(245, 158, 11, 0.05);
+        }
+
+        .priority-item {
+            border-left: 4px solid #f59e0b !important;
+            background: rgba(245, 158, 11, 0.05);
+        }
+    </style>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        let currentUser = null;
+        let socket = io();
+
+        fetch('/api/me').then(res => {
+            if (!res.ok) window.location.href = '/login.html';
+            return res.json();
+        }).then(user => {
+            currentUser = user;
+            document.getElementById('user-name').textContent = user.username;
+            document.getElementById('user-initial').textContent = user.username.charAt(0).toUpperCase();
+        });
+
+        function logout() {
+            if (confirm('Deseja realmente sair?')) {
+                fetch('/api/logout', { method: 'POST' }).then(() => window.location.href = '/login.html');
+            }
+        }
+    </script>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <i class="fas fa-ticket-alt"></i>
+            <h2>FILA-APP</h2>
+        </div>
+        <div style="padding: 20px 0;">
+            <a href="/dashboard.html" class="menu-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="/index.html" class="menu-item">
+                <i class="fas fa-desktop"></i>
+                <span>Recepção</span>
+            </a>
+            <a href="/operator.html" class="menu-item active">
+                <i class="fas fa-headset"></i>
+                <span>Painel Operador</span>
+            </a>
+            <a href="/totem.html" target="_blank" class="menu-item">
+                <i class="fas fa-tablet-alt"></i>
+                <span>Totem</span>
+            </a>
+            <a href="/panel.html" target="_blank" class="menu-item">
+                <i class="fas fa-tv"></i>
+                <span>Painel TV</span>
+            </a>
+        </div>
+        <div style="padding: 20px 0; border-top: 1px solid rgba(255,255,255,0.1);">
+            <div
+                style="padding: 0 20px 10px; font-size: 0.75rem; text-transform: uppercase; color: rgba(255, 255, 255, 0.5); font-weight: 600; letter-spacing: 0.5px;">
+                Administração</div>
+            <a href="/settings.html" class="menu-item">
+                <i class="fas fa-cog"></i>
+                <span>Configurações</span>
+            </a>
+            <div style="padding: 10px 20px;">
+                <button id="noti-btn" class="btn"
+                    style="width: 100%; justify-content: flex-start; gap: 10px; padding: 12px; font-size: 0.85rem; background: rgba(59, 130, 246, 0.1); color: #93c5fd; border: 1px dashed rgba(59, 130, 246, 0.3);"
+                    onclick="requestNotifications()">
+                    <i class="fas fa-bell"></i> Ativar Notificações
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+        <h1><i class="fas fa-headset"></i> Painel do Operador</h1>
+        <div class="user-menu" onclick="logout()">
+            <div class="user-avatar" id="user-initial">O</div>
+            <div>
+                <div style="font-weight: 600; font-size: 0.9rem;" id="user-name">Operador</div>
+            </div>
+            <i class="fas fa-sign-out-alt" style="color: var(--danger);"></i>
+        </div>
+    </div>
+
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <!-- SELEÇÃO DE SETOR -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-building"></i>
+                <h2>Seu Setor</h2>
+            </div>
+            <div class="form-group" style="margin: 0;">
+                <select id="select-sector" onchange="changeSector()">
+                    <option value="">Selecione seu setor...</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="sector-content" style="display: none;">
+            <!-- ESTATÍSTICAS -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">AGUARDANDO</div>
+                    <div class="stat-value" id="stat-waiting">0</div>
+                </div>
+                <div class="stat-card success">
+                    <div class="stat-label">ATENDIDOS HOJE</div>
+                    <div class="stat-value" id="stat-completed">0</div>
+                </div>
+            </div>
+
+            <!-- ATENDIMENTO ATUAL -->
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-user-clock"></i>
+                    <h2>Atendimento Atual</h2>
+                </div>
+                <div id="ticket-info">
+                    <div class="ticket-display">
+                        <div class="number" id="active-ticket-number">---</div>
+                        <div id="active-patient-name"
+                            style="font-size: 1.5rem; color: #10b981; font-weight: 600; margin: 10px 0;"></div>
+                        <div class="status" id="active-ticket-status">Nenhum atendimento</div>
+                    </div>
+                </div>
+
+                <button id="btn-call" class="btn btn-primary" onclick="callNext()">
+                    <i class="fas fa-phone"></i> Chamar Próximo
+                </button>
+
+                <div id="in-call-buttons" style="display: none;">
+                    <button class="btn btn-warning" onclick="recallTicket()">
+                        <i class="fas fa-redo"></i> Chamar Novamente
+                    </button>
+                    <button class="btn btn-success" onclick="startService()">
+                        <i class="fas fa-play"></i> Iniciar Atendimento
+                    </button>
+                    <button class="btn btn-danger" onclick="cancelTicket()">
+                        <i class="fas fa-times"></i> Cancelar Senha
+                    </button>
+                </div>
+
+                <button id="btn-complete" class="btn btn-success" style="display:none;" onclick="completeService()">
+                    <i class="fas fa-check"></i> Concluir Atendimento
+                </button>
+
+                <!-- REDIRECIONAMENTO -->
+                <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border);">
+                    <label><i class="fas fa-exchange-alt"></i> Redirecionar para outro setor</label>
+                    <div class="form-group">
+                        <select id="redirect-sector">
+                            <option value="">Escolher setor...</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-secondary" onclick="redirectTicket()">
+                        <i class="fas fa-share"></i> Redirecionar
+                    </button>
+                </div>
+            </div>
+
+            <!-- FILA DE ESPERA -->
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-list-ol"></i>
+                    <h2>Fila de Espera</h2>
+                </div>
+                <ul class="queue-list" id="queue-list">
+                    <!-- Itens da fila -->
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSector = null;
+        let activeTicket = null;
+
+        async function loadSectors() {
+            const res = await fetch('/api/sectors');
+            const sectors = await res.json();
+
+            const select = document.getElementById('select-sector');
+            const redirectSelect = document.getElementById('redirect-sector');
+
+            select.innerHTML = '<option value="">Selecione seu setor...</option>';
+            redirectSelect.innerHTML = '<option value="">Escolher setor...</option>';
+
+            sectors.forEach(s => {
+                select.innerHTML += `<option value="${s.id}">${s.name} - ${s.room || 'S/N'}</option>`;
+                redirectSelect.innerHTML += `<option value="${s.id}">${s.name}</option>`;
+            });
+        }
+
+        function changeSector() {
+            currentSector = document.getElementById('select-sector').value;
+            if (['GERENTE', 'SUPER_ADMIN'].includes(currentUser.role)) {
+                if (document.getElementById('reports-menu-link'))
+                    document.getElementById('reports-menu-link').style.display = 'flex';
+            }
+
+            if (currentUser.role === 'SUPER_ADMIN') {
+                const um = document.getElementById('users-menu');
+                if (um) um.style.display = 'flex';
+            }
+            if (currentSector) {
+                document.getElementById('sector-content').style.display = 'block';
+                socket.emit('join-operator-sector', currentSector);
+                loadQueue();
+                setInterval(loadQueue, 3000);
+            }
+        }
+
+        async function loadQueue() {
+            if (!currentSector) return;
+
+            const res = await fetch(`/api/tickets/sector/${currentSector}`);
+            const tickets = await res.json();
+
+            const waiting = tickets.filter(t => t.status === 'pending').length;
+            const completed = tickets.filter(t => t.status === 'completed').length;
+
+            document.getElementById('stat-waiting').textContent = waiting;
+            document.getElementById('stat-completed').textContent = completed;
+
+            const queueList = document.getElementById('queue-list');
+            queueList.innerHTML = '';
+
+            tickets.filter(t => ['pending', 'calling'].includes(t.status)).forEach(t => {
+                const badge = t.status === 'calling' ? 'calling' : 'pending';
+                const badgeText = t.status === 'calling' ? 'Chamando' : 'Aguardando';
+
+                const isPriority = t.type === 'priority';
+                const priorityTag = isPriority ? '<span class="priority-tag"><i class="fas fa-wheelchair"></i> P</span>' : '';
+
+                const patientInfo = t.patient_name ?
+                    `<div style="font-size: 0.85rem; color: #64748b; margin-top: 4px;">${t.patient_name}</div>` : '';
+
+                queueList.innerHTML += `
+            <li class="queue-item ${isPriority ? 'priority-item' : ''}">
+                <div>
+                    <span class="number">${t.number} ${priorityTag}</span>
+                    ${patientInfo}
+                </div>
+                <span class="badge badge-${badge}">${badgeText}</span>
+            </li>
+        `;
+            });
+        }
+        async function callNext() {
+            if (!currentSector) return alert("Selecione um setor primeiro");
+
+            try {
+                const res = await fetch('/api/tickets/call-next', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sector_id: currentSector })
+                });
+
+                if (res.ok) {
+                    const ticket = await res.json();
+                    activeTicket = ticket;
+                    showTicket(ticket, 'Chamando...');
+                    document.getElementById('btn-call').style.display = 'none';
+                    document.getElementById('in-call-buttons').style.display = 'block';
+                    loadQueue();
+                } else if (res.status === 404) {
+                    alert('Nenhuma senha aguardando atendimento.');
+                } else {
+                    const err = await res.json();
+                    alert('Erro ao chamar: ' + (err.error || 'Erro desconhecido'));
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Erro de conexão ao chamar senha");
+            }
+        }
+
+        async function recallTicket() {
+            if (!activeTicket) return;
+            try {
+                const res = await fetch('/api/tickets/recall', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ticket_id: activeTicket.id })
+                });
+                if (res.ok) {
+                    // No need to reload queue immediately as it's just a recall, 
+                    // but maybe we want to visual feedback?
+                    // Backend emits 'ticket_called'
+                } else {
+                    alert("Erro ao chamar novamente");
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function startService() {
+            if (!activeTicket) return;
+            const res = await fetch('/api/tickets/start', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ticket_id: activeTicket.id })
+            });
+
+            if (res.ok) {
+                showTicket(activeTicket, 'Em atendimento');
+                document.getElementById('in-call-buttons').style.display = 'none';
+                document.getElementById('btn-complete').style.display = 'block';
+                loadQueue();
+            }
+        }
+
+        async function completeService() {
+            if (!activeTicket) return;
+            const res = await fetch('/api/tickets/complete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ticket_id: activeTicket.id })
+            });
+
+            if (res.ok) {
+                resetTicketDisplay();
+                loadQueue();
+            }
+        }
+
+        async function cancelTicket() {
+            if (!activeTicket || !confirm('Cancelar esta senha?')) return;
+            try {
+                const res = await fetch('/api/tickets/cancel', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ticket_id: activeTicket.id })
+                });
+
+                if (res.ok) {
+                    resetTicketDisplay();
+                    loadQueue();
+                } else {
+                    alert("Erro ao cancelar senha");
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Erro de conexão");
+            }
+        }
+
+        async function redirectTicket() {
+            const targetSector = document.getElementById('redirect-sector').value;
+            if (!activeTicket || !targetSector) return;
+
+            try {
+                const res = await fetch('/api/tickets/redirect', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        ticket_id: activeTicket.id,
+                        new_sector_id: targetSector
+                    })
+                });
+
+                if (res.ok) {
+                    alert('Senha redirecionada!');
+                    resetTicketDisplay();
+                    loadQueue();
+                } else {
+                    alert("Erro ao redirecionar");
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Erro de conexão");
+            }
+        }
+
+        function showTicket(ticket, status) {
+            document.getElementById('active-ticket-number').textContent = ticket.number;
+            document.getElementById('active-patient-name').textContent = ticket.patient_name || '';
+            document.getElementById('active-ticket-status').textContent = status;
+        }
+
+        function resetTicketDisplay() {
+            activeTicket = null;
+            document.getElementById('active-ticket-number').textContent = '---';
+            document.getElementById('active-patient-name').textContent = '';
+            document.getElementById('active-ticket-status').textContent = 'Nenhum atendimento';
+            document.getElementById('btn-call').style.display = 'block';
+            document.getElementById('in-call-buttons').style.display = 'none';
+            document.getElementById('btn-complete').style.display = 'none';
+        }
+
+        // --- NOTIFICATIONS & TAB FLASHING ---
+        let notificationsEnabled = false;
+        const alertSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3");
+        let originalTitle = document.title;
+        let blinkTitleInterval = null;
+
+        // Desbloquear áudio na primeira interação
+        document.body.addEventListener('click', () => {
+            alertSound.play().then(() => {
+                alertSound.pause();
+                alertSound.currentTime = 0;
+            }).catch(e => console.log("Áudio bloqueado:", e));
+        }, { once: true });
+
+        function requestNotifications() {
+            if (!("Notification" in window)) {
+                alert("Este navegador não suporta notificações.");
+                return;
+            }
+
+            Notification.requestPermission().then(permission => {
+                if (permission === "granted") {
+                    notificationsEnabled = true;
+                    document.getElementById('noti-btn').style.background = 'rgba(16, 185, 129, 0.1)';
+                    document.getElementById('noti-btn').style.color = '#6ee7b7';
+                    document.getElementById('noti-btn').innerHTML = '<i class="fas fa-check-circle"></i> Notificações Ativas';
+                    alert("Notificações ativadas! Você será avisado quando houver novas senhas no seu setor.");
+                }
+            });
+        }
+
+        function startBlinking() {
+            if (blinkTitleInterval) return;
+            blinkTitleInterval = setInterval(() => {
+                document.title = document.title === "🔔 NOVA SENHA!" ? originalTitle : "🔔 NOVA SENHA!";
+            }, 1000);
+        }
+
+        function stopBlinking() {
+            if (blinkTitleInterval) {
+                clearInterval(blinkTitleInterval);
+                blinkTitleInterval = null;
+                document.title = originalTitle;
+            }
+        }
+
+        window.addEventListener('focus', stopBlinking);
+
+        socket.on('new_ticket', (ticket) => {
+            // Verifica se a nova senha pertence ao setor do operador LOGADO (usando variável atualizada)
+            if (currentSector == ticket.sector_id) {
+                loadQueue(); // Atualiza a lista visualmente
+
+                // Notificar apenas se habilitado
+                if (notificationsEnabled) {
+                    alertSound.play().catch(e => console.error("Erro som:", e));
+
+                    if (!document.hasFocus()) {
+                        startBlinking();
+                    }
+
+                    if (Notification.permission === "granted") {
+                        new Notification("Nova Senha na Fila!", {
+                            body: `Senha: ${ticket.number}\nSetor: ${ticket.sector_name}`,
+                            icon: '/img/logo_.png'
+                        });
+                    }
+                }
+            }
+        });
+
+        socket.on('queue-update', () => {
+            loadQueue();
+        });
+
+        loadSectors();
+    </script>
+</body>
+
+</html>

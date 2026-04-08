@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instalação - FILA-APP</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .install-container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+
+        .step {
+            display: none;
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        .progress-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .progress-bar::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--border);
+            z-index: -1;
+            transform: translateY(-50%);
+        }
+
+        .step-indicator {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: white;
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--text-muted);
+            transition: all 0.3s;
+        }
+
+        .step-indicator.active {
+            border-color: var(--primary);
+            color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+
+        .step-indicator.completed {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .loading-spinner {
+            display: none;
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .alert-info {
+            background: rgba(6, 182, 212, 0.1);
+            color: var(--info);
+        }
+
+        .alert-warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .progress-list {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+
+        .progress-item {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.02);
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .progress-item.success {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--success);
+        }
+
+        .progress-item.pending {
+            color: var(--text-muted);
+            opacity: 0.6;
+        }
+
+        .req-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            border-radius: 6px;
+            background: rgba(0, 0, 0, 0.03);
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+
+        .req-item.checked {
+            background: rgba(34, 197, 94, 0.08);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+
+        .req-item input {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .req-badge {
+            font-size: 0.75rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .badge-danger {
+            background: var(--danger);
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="install-container">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-magic"></i>
+                <h2>Instalador Web FILA-APP</h2>
+            </div>
+
+            <div class="progress-bar">
+                <div class="step-indicator active" data-step="1">1</div>
+                <div class="step-indicator" data-step="2">2</div>
+                <div class="step-indicator" data-step="3">3</div>
+                <div class="step-indicator" data-step="4">4</div>
+            </div>
+
+            <!-- Step 1: Boas-vindas e Requisitos -->
+            <div class="step active" id="step1">
+                <h3>Verificação de Pré-requisitos</h3>
+                <p style="margin: 15px 0; color: var(--text-muted);">
+                    Para garantir que o sistema funcione, confirme a instalação dos componentes básicos.
+                </p>
+
+                <div class="alert alert-info" style="padding: 10px; font-size: 0.85rem; margin-bottom: 15px;">
+                    <i class="fas fa-folder-open"></i>
+                    <span>Temos os instaladores na pasta <strong>INSTALADORES</strong> do projeto.</span>
+                </div>
+
+                <div class="req-item" id="req_node_container">
+                    <input type="checkbox" id="chk_node" onchange="validateStep1()">
+                    <div style="flex: 1;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <strong>Node.js (v16+)</strong>
+                            <span id="badge_node" class="req-badge" style="display: none;">Detectado</span>
+                        </div>
+                        <small style="color: var(--text-muted);">Ambiente de execução do servidor.</small>
+                    </div>
+                </div>
+
+                <div class="req-item" id="req_mysql_container">
+                    <input type="checkbox" id="chk_mysql" onchange="validateStep1()">
+                    <div style="flex: 1;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <strong>MySQL Server (v8+)</strong>
+                            <span id="badge_mysql" class="req-badge" style="display: none;">Detectado</span>
+                        </div>
+                        <small style="color: var(--text-muted);">Banco de dados para armazenar informações.</small>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin: 15px 0;">
+                    <button class="btn btn-secondary btn-sm" onclick="checkRequirements()" id="btn_recheck">
+                        <i class="fas fa-sync-alt"></i> Verificar Automaticamente
+                    </button>
+                </div>
+
+                <div class="form-actions"
+                    style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
+                    <a href="manual_implantacao.html" target="_blank"
+                        style="font-size: 0.85rem; color: var(--primary);"><i class="fas fa-book"></i> Abrir Manual de
+                        Implantação</a>
+                    <button class="btn btn-primary" id="btn_step1_next" onclick="nextStep(2)" disabled>Próximo Passo <i
+                            class="fas fa-arrow-right"></i></button>
+                </div>
+            </div>
+
+            <!-- Step 2: Configuração do Banco de Dados -->
+            <div class="step" id="step2">
+                <h3>Banco de Dados</h3>
+                <p style="margin-bottom: 20px; color: var(--text-muted); font-size: 0.9rem;">
+                    Informe os dados de acesso ao seu MySQL. O sistema criará o banco se ele ainda não existir.
+                </p>
+                <div class="form-group">
+                    <label>Host (Servidor)</label>
+                    <input type="text" id="db_host" value="localhost" placeholder="ex: localhost">
+                </div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label>Usuário MySQL</label>
+                        <input type="text" id="db_user" value="root" placeholder="ex: root">
+                    </div>
+                    <div class="form-group">
+                        <label>Senha MySQL</label>
+                        <input type="password" id="db_pass" placeholder="Senha do root/usuário">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Nome do Banco (Será criado se não existir)</label>
+                    <input type="text" id="db_name" value="fila_app" placeholder="ex: fila_app">
+                </div>
+                <div
+                    style="margin-bottom: 20px; display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.03); padding: 10px; border-radius: 6px;">
+                    <input type="checkbox" id="include_demo" style="width: 18px; height: 18px; cursor: pointer;">
+                    <label for="include_demo" style="cursor: pointer; font-weight: 500;">
+                        Incluir dados de teste (Demo)
+                        <small style="display: block; color: var(--text-muted); font-weight: 400;">Popula o sistema com
+                            senhas históricas para testes.</small>
+                    </label>
+                </div>
+                <div id="db_test_message"
+                    style="margin-bottom: 15px; font-weight: 600; min-height: 1.2rem; font-size: 0.9rem;"></div>
+                <div class="form-actions" style="display: flex; justify-content: space-between;">
+                    <button class="btn btn-secondary" onclick="prevStep(1)">Voltar</button>
+                    <button class="btn btn-primary" id="btn_test_db">Validar e Iniciar <i
+                            class="fas fa-arrow-right"></i></button>
+                </div>
+            </div>
+
+            <!-- Step 3: Progresso da Instalação -->
+            <div class="step" id="step3">
+                <h3>Configurando seu Sistema</h3>
+                <p style="margin-bottom: 20px; color: var(--text-muted); font-size: 0.9rem;">
+                    Aguarde enquanto executamos os passos da implantação.
+                </p>
+                <ul class="progress-list" id="install_progress_list">
+                    <li class="progress-item pending" id="step_connect"><i class="fas fa-circle-notch fa-spin"></i>
+                        Preparando conexão...</li>
+                    <li class="progress-item pending" id="step_db"><i class="fas fa-database"></i> Criando banco de
+                        dados...</li>
+                    <li class="progress-item pending" id="step_tables"><i class="fas fa-table"></i> Gerando tabelas e
+                        índices...</li>
+                    <li class="progress-item pending" id="step_users"><i class="fas fa-users"></i> Semeando perfis
+                        padrão...</li>
+                    <li class="progress-item pending" id="step_demo" style="display: none;"><i class="fas fa-vial"></i>
+                        Populando dados demo...</li>
+                    <li class="progress-item pending" id="step_config"><i class="fas fa-file-code"></i> Finalizando
+                        configuração...</li>
+                </ul>
+                <div class="loading-spinner" id="install_spinner" style="display: block;"></div>
+            </div>
+
+            <!-- Step 4: Finalização -->
+            <div class="step" id="step4">
+                <div style="text-align: center; padding: 20px;">
+                    <i class="fas fa-check-circle"
+                        style="font-size: 4rem; color: var(--success); margin-bottom: 20px;"></i>
+                    <h3>Tudo Pronto!</h3>
+                    <p style="margin: 15px 0; color: var(--text-muted);">O sistema foi configurado com sucesso.</p>
+
+                    <div class="alert alert-info" style="display: block; text-align: left; font-size: 0.9rem;">
+                        <strong>Acesso Administrativo:</strong><br>
+                        Usuário: <code style="background: white; padding: 2px 5px; border-radius: 3px;">admin</code><br>
+                        Senha: <code style="background: white; padding: 2px 5px; border-radius: 3px;">123456</code>
+                        <hr style="margin: 10px 0; border: 0; border-top: 1px solid rgba(0,0,0,0.1);">
+                        <span>Outros perfis criados: <i>gerente, operador, porteiro, recepcao</i> (Senha:
+                            123456).</span>
+                    </div>
+
+                    <p id="redirect_msg" style="font-weight: 600; margin-top: 15px;">Redirecionando para o login em 5
+                        segundos...</p>
+                    <a href="/login.html" class="btn btn-primary" style="margin-top: 20px; width: 100%;">Acessar Painel
+                        <i class="fas fa-sign-in-alt"></i></a>
+                </div>
+            </div>
+
+            <div class="loading-spinner" id="global_spinner"></div>
+        </div>
+        <p style="text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-top: 20px;">
+            FILA-APP v1.0 • Sistema de Gestão de Filas
+        </p>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        const dbConfig = {};
+
+        // Inicializar verificação no carregamento
+        window.onload = checkRequirements;
+
+        async function checkRequirements() {
+            const btn = document.getElementById('btn_recheck');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Verificando...';
+
+            try {
+                const res = await fetch('/api/setup/check-requirements');
+                const data = await res.json();
+
+                if (data.success) {
+                    const reqs = data.requirements;
+
+                    if (reqs.node) {
+                        document.getElementById('chk_node').checked = true;
+                        document.getElementById('badge_node').style.display = 'inline-block';
+                        document.getElementById('badge_node').className = 'req-badge badge-success';
+                        document.getElementById('badge_node').innerText = 'Detectado';
+                    }
+
+                    if (reqs.mysql) {
+                        document.getElementById('chk_mysql').checked = true;
+                        document.getElementById('badge_mysql').style.display = 'inline-block';
+                        document.getElementById('badge_mysql').className = 'req-badge badge-success';
+                        document.getElementById('badge_mysql').innerText = 'Detectado';
+                    }
+
+                    validateStep1();
+                }
+            } catch (err) {
+                console.error('Erro ao verificar requisitos:', err);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+
+        function validateStep1() {
+            const chkNode = document.getElementById('chk_node').checked;
+            const chkMysql = document.getElementById('chk_mysql').checked;
+            const btnNext = document.getElementById('btn_step1_next');
+
+            document.getElementById('req_node_container').classList.toggle('checked', chkNode);
+            document.getElementById('req_mysql_container').classList.toggle('checked', chkMysql);
+
+            btnNext.disabled = !(chkNode && chkMysql);
+        }
+
+        function nextStep(step) {
+            document.getElementById(`step${currentStep}`).classList.remove('active');
+            document.querySelector(`.step-indicator[data-step="${currentStep}"]`).classList.add('completed');
+            currentStep = step;
+            document.getElementById(`step${currentStep}`).classList.add('active');
+            document.querySelector(`.step-indicator[data-step="${currentStep}"]`).classList.add('active');
+
+            if (step === 3) startInstallation();
+        }
+
+        function prevStep(step) {
+            document.getElementById(`step${currentStep}`).classList.remove('active');
+            document.querySelector(`.step-indicator[data-step="${currentStep}"]`).classList.remove('active');
+            currentStep = step;
+            document.getElementById(`step${currentStep}`).classList.add('active');
+            document.querySelector(`.step-indicator[data-step="${currentStep}"]`).classList.remove('completed');
+        }
+
+        document.getElementById('btn_test_db').addEventListener('click', async () => {
+            const host = document.getElementById('db_host').value;
+            const user = document.getElementById('db_user').value;
+            const password = document.getElementById('db_pass').value;
+            const database = document.getElementById('db_name').value;
+            const msgDiv = document.getElementById('db_test_message');
+            const spinner = document.getElementById('global_spinner');
+
+            if (!host || !user || !database) {
+                msgDiv.style.color = 'var(--danger)';
+                msgDiv.innerText = 'Preencha Host, Usuário e Nome do Banco.';
+                return;
+            }
+
+            spinner.style.display = 'block';
+            msgDiv.innerText = '';
+
+            try {
+                const res = await fetch('/api/setup/test-db', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ host, user, password, database })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    msgDiv.style.color = 'var(--success)';
+                    msgDiv.innerText = '✅ ' + data.message;
+                    dbConfig.host = host;
+                    dbConfig.user = user;
+                    dbConfig.password = password;
+                    dbConfig.database = database;
+                    setTimeout(() => nextStep(3), 1500);
+                } else {
+                    msgDiv.style.color = 'var(--danger)';
+                    msgDiv.innerText = '❌ ' + data.message;
+                }
+            } catch (err) {
+                msgDiv.style.color = 'var(--danger)';
+                msgDiv.innerText = '❌ Erro de comunicação com o servidor.';
+            } finally {
+                spinner.style.display = 'none';
+            }
+        });
+
+        async function startInstallation() {
+            const spinner = document.getElementById('install_spinner');
+            const includeDemo = document.getElementById('include_demo').checked;
+
+            if (includeDemo) {
+                document.getElementById('step_demo').style.display = 'flex';
+            }
+
+            async function updateUI(stepId, text) {
+                const el = document.getElementById(stepId);
+                el.classList.remove('pending');
+                el.classList.add('success');
+                el.innerHTML = `<i class="fas fa-check-circle"></i> ${text}`;
+                await new Promise(r => setTimeout(r, 600)); // Pequena pausa para efeito visual
+            }
+
+            try {
+                const res = await fetch('/api/setup/install', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ dbConfig, includeDemo })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    // Simular progresso visual baseado no sucesso Real
+                    await updateUI('step_connect', 'Conexão MySQL estabelecida.');
+                    await updateUI('step_db', 'Banco de dados verificado.');
+                    await updateUI('step_tables', 'Tabelas criadas com sucesso.');
+                    await updateUI('step_users', 'Perfis padrão semeados.');
+
+                    if (includeDemo) {
+                        await updateUI('step_demo', 'Dados de demonstração populados.');
+                    }
+
+                    await updateUI('step_config', 'Configuração finalizada.');
+
+                    spinner.style.display = 'none';
+                    setTimeout(() => nextStep(4), 1000);
+                    startRedirect();
+                } else {
+                    alert('Erro na instalação: ' + data.message);
+                }
+            } catch (err) {
+                alert('Erro fatal: ' + err.message);
+            }
+        }
+
+        function startRedirect() {
+            let countdown = 5;
+            const interval = setInterval(() => {
+                countdown--;
+                if (countdown >= 0) {
+                    document.getElementById('redirect_msg').innerText = `Redirecionando para o login em ${countdown} segundos...`;
+                }
+                if (countdown === 0) {
+                    clearInterval(interval);
+                    window.location.href = '/login.html';
+                }
+            }, 1000);
+        }
+    </script>
+</body>
+
+</html>

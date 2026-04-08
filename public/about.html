@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sobre | FILA-APP</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --accent: #8b5cf6;
+            --success: #10b981;
+            --text-dark: #1e293b;
+            --text-light: #64748b;
+            --bg-light: #f8fafc;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-light);
+            margin: 0;
+            padding: 0;
+        }
+
+        .about-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .hero-section {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            color: white;
+            padding: 80px 40px;
+            border-radius: 24px;
+            text-align: center;
+            margin-bottom: 40px;
+            box-shadow: 0 20px 60px rgba(59, 130, 246, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: moveBackground 20s linear infinite;
+            opacity: 0.3;
+        }
+
+        @keyframes moveBackground {
+            0% {
+                transform: translate(0, 0);
+            }
+
+            100% {
+                transform: translate(50px, 50px);
+            }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .logo-hero {
+            width: 120px;
+            height: auto;
+            margin-bottom: 24px;
+            filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.2));
+        }
+
+        .hero-title {
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            letter-spacing: -1px;
+        }
+
+        .hero-subtitle {
+            font-size: 20px;
+            font-weight: 400;
+            opacity: 0.95;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .section {
+            background: white;
+            padding: 48px;
+            border-radius: 20px;
+            margin-bottom: 32px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .section-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-title i {
+            color: var(--primary);
+        }
+
+        .section-content {
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-light);
+        }
+
+        .innovation-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            margin-top: 32px;
+        }
+
+        .innovation-card {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            padding: 32px;
+            border-radius: 16px;
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .innovation-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 32px rgba(59, 130, 246, 0.2);
+        }
+
+        .innovation-icon {
+            font-size: 48px;
+            color: var(--primary);
+            margin-bottom: 16px;
+        }
+
+        .innovation-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+        }
+
+        .innovation-desc {
+            font-size: 14px;
+            color: var(--text-light);
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 32px;
+            margin-top: 32px;
+        }
+
+        .team-card {
+            background: white;
+            border: 2px solid #e2e8f0;
+            padding: 32px;
+            border-radius: 16px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .team-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.15);
+            transform: translateY(-4px);
+        }
+
+        .team-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 40px;
+            color: white;
+            font-weight: 700;
+        }
+
+        .team-name {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+        }
+
+        .team-role {
+            font-size: 14px;
+            color: var(--primary);
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .team-linkedin {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: #0077b5;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .team-linkedin:hover {
+            background: #005885;
+        }
+
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .tech-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            border: 2px solid #cbd5e1;
+            border-radius: 12px;
+            font-weight: 600;
+            color: var(--text-dark);
+            transition: all 0.3s;
+        }
+
+        .tech-badge:hover {
+            border-color: var(--primary);
+            background: linear-gradient(135deg, #eff6ff, #dbeafe);
+            transform: translateY(-2px);
+        }
+
+        .tech-badge i {
+            font-size: 20px;
+            color: var(--primary);
+        }
+
+        .support-box {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 40px;
+            border-radius: 16px;
+            text-align: center;
+            margin-top: 32px;
+        }
+
+        .support-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .support-contact {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 32px;
+            background: white;
+            color: var(--success);
+            border-radius: 12px;
+            font-size: 20px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: transform 0.3s;
+        }
+
+        .support-contact:hover {
+            transform: scale(1.05);
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: background 0.3s;
+            margin-bottom: 24px;
+        }
+
+        .back-button:hover {
+            background: var(--primary-dark);
+        }
+
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 32px;
+            }
+
+            .section {
+                padding: 32px 24px;
+            }
+
+            .team-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="about-container">
+        <a href="dashboard.html" class="back-button">
+            <i class="fas fa-arrow-left"></i> Voltar ao Dashboard
+        </a>
+
+        <div class="hero-section">
+            <div class="hero-content">
+                <img src="img/logo_.png" alt="FILA-APP Logo" class="logo-hero">
+                <h1 class="hero-title">FILA-APP</h1>
+                <p class="hero-subtitle">Sistema Inteligente de Gerenciamento de Filas de Atendimento</p>
+            </div>
+        </div>
+
+        <!-- Sobre o Sistema -->
+        <div class="section">
+            <h2 class="section-title">
+                <i class="fas fa-info-circle"></i>
+                Sobre o Sistema
+            </h2>
+            <div class="section-content">
+                <p>
+                    O <strong>FILA-APP</strong> é uma solução tecnológica desenvolvida internamente pelo Departamento de
+                    Informática do
+                    <strong>Hospital Presidente Vargas</strong> para otimizar e modernizar o processo de gerenciamento
+                    de filas de atendimento.
+                </p>
+                <p style="margin-top: 16px;">
+                    Criado com foco na experiência do usuário e na eficiência operacional, o sistema integra tecnologias
+                    web modernas
+                    para proporcionar controle em tempo real, métricas avançadas e uma interface intuitiva que facilita
+                    tanto o trabalho
+                    dos operadores quanto a experiência dos pacientes.
+                </p>
+            </div>
+        </div>
+
+        <!-- Inovação Institucional -->
+        <div class="section">
+            <h2 class="section-title">
+                <i class="fas fa-lightbulb"></i>
+                Inovação Institucional
+            </h2>
+            <div class="section-content">
+                <p>
+                    Este projeto representa um marco importante na transformação digital do Hospital Presidente Vargas,
+                    demonstrando o compromisso da instituição com a inovação e a melhoria contínua dos serviços
+                    prestados à comunidade.
+                </p>
+            </div>
+
+            <div class="innovation-grid">
+                <div class="innovation-card">
+                    <div class="innovation-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="innovation-title">Eficiência Operacional</div>
+                    <div class="innovation-desc">Redução de tempo de espera e otimização do fluxo de atendimento</div>
+                </div>
+
+                <div class="innovation-card">
+                    <div class="innovation-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="innovation-title">Experiência do Paciente</div>
+                    <div class="innovation-desc">Interface moderna e intuitiva para melhor experiência de atendimento
+                    </div>
+                </div>
+
+                <div class="innovation-card">
+                    <div class="innovation-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <div class="innovation-title">Inteligência de Dados</div>
+                    <div class="innovation-desc">Métricas e relatórios avançados para tomada de decisão estratégica
+                    </div>
+                </div>
+
+                <div class="innovation-card">
+                    <div class="innovation-icon">
+                        <i class="fas fa-code"></i>
+                    </div>
+                    <div class="innovation-title">Desenvolvimento Próprio</div>
+                    <div class="innovation-desc">Solução customizada desenvolvida internamente pela equipe de TI</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Equipe de Desenvolvimento -->
+        <div class="section">
+            <h2 class="section-title">
+                <i class="fas fa-code-branch"></i>
+                Equipe de Desenvolvimento
+            </h2>
+            <div class="section-content">
+                <p>
+                    O FILA-APP foi desenvolvido por profissionais do Departamento de Informática
+                    do
+                    Hospital Presidente Vargas, que uniram expertise técnica e conhecimento do ambiente hospitalar para
+                    criar
+                    uma solução verdadeiramente eficaz.
+                </p>
+            </div>
+
+            <div class="team-grid">
+                <div class="team-card">
+                    <img src="img/jefferson.png" alt="Jefferson Carvalho Dantas"
+                        style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin-bottom: 20px; border: 3px solid var(--primary);">
+                    <div class="team-name">Jefferson Carvalho Dantas</div>
+                    <div class="team-role">Analista de Sistemas</div>
+                    <a href="https://www.linkedin.com/in/jeffersondantas/" target="_blank" class="team-linkedin">
+                        <i class="fab fa-linkedin"></i>
+                        Ver Perfil
+                    </a>
+                </div>
+
+                <div class="team-card">
+                    <img src="img/carlos.png" alt="Carlos André de Santana"
+                        style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin-bottom: 20px; border: 3px solid var(--primary);">
+                    <div class="team-name">Carlos André de Santana</div>
+                    <div class="team-role">Quality Assurance (QA)</div>
+                    <a href="https://www.linkedin.com/in/carlosandre81/" target="_blank" class="team-linkedin">
+                        <i class="fab fa-linkedin"></i>
+                        Ver Perfil
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tecnologias Utilizadas -->
+        <div class="section">
+            <h2 class="section-title">
+                <i class="fas fa-laptop-code"></i>
+                Tecnologias Utilizadas
+            </h2>
+            <div class="section-content">
+                <p>
+                    O sistema foi construído utilizando tecnologias modernas e consolidadas, garantindo performance,
+                    segurança e escalabilidade.
+                </p>
+            </div>
+
+            <div class="tech-stack">
+                <div class="tech-badge">
+                    <i class="fab fa-node-js"></i>
+                    Node.js
+                </div>
+                <div class="tech-badge">
+                    <i class="fas fa-server"></i>
+                    Express.js
+                </div>
+                <div class="tech-badge">
+                    <i class="fas fa-database"></i>
+                    MySQL
+                </div>
+                <div class="tech-badge">
+                    <i class="fab fa-html5"></i>
+                    HTML5
+                </div>
+                <div class="tech-badge">
+                    <i class="fab fa-css3-alt"></i>
+                    CSS3
+                </div>
+                <div class="tech-badge">
+                    <i class="fab fa-js"></i>
+                    JavaScript
+                </div>
+                <div class="tech-badge">
+                    <i class="fas fa-plug"></i>
+                    Socket.IO
+                </div>
+                <div class="tech-badge">
+                    <i class="fas fa-chart-bar"></i>
+                    Chart.js
+                </div>
+                <div class="tech-badge">
+                    <i class="fas fa-lock"></i>
+                    JWT Auth
+                </div>
+                <div class="tech-badge">
+                    <i class="fas fa-shield-alt"></i>
+                    Bcrypt
+                </div>
+            </div>
+        </div>
+
+        <!-- Suporte -->
+        <div class="section">
+            <h2 class="section-title">
+                <i class="fas fa-headset"></i>
+                Suporte Técnico
+            </h2>
+            <div class="section-content">
+                <p>
+                    Para dúvidas, sugestões ou suporte técnico, nossa equipe está à disposição para ajudar.
+                </p>
+            </div>
+
+            <div class="support-box">
+                <div class="support-title">Entre em Contato</div>
+                <a href="https://wa.me/5598981025255" target="_blank" class="support-contact">
+                    <i class="fab fa-whatsapp"></i>
+                    (98) 98102-5255
+                </a>
+            </div>
+        </div>
+
+        <div class="section"
+            style="text-align: center; background: linear-gradient(135deg, var(--primary), var(--accent)); color: white;">
+            <p style="margin: 0; font-size: 16px; font-weight: 600;">
+                <i class="fas fa-hospital"></i> Hospital Presidente Vargas
+            </p>
+            <p style="margin: 8px 0 0 0; font-size: 14px; opacity: 0.9;">
+                Departamento de Informática - Inovação e Tecnologia em Saúde
+            </p>
+            <p style="margin: 12px 0 0 0; font-size: 12px; opacity: 0.7; font-style: italic;">
+                Licenciado sob GNU General Public License v3 (GPL v3)
+            </p>
+        </div>
+    </div>
+</body>
+
+</html>

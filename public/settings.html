@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurações | FILA-APP</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <script>
+        let currentUser = null;
+        fetch('/api/me').then(res => {
+            if (!res.ok) window.location.href = '/login.html';
+            return res.json();
+        }).then(user => {
+            currentUser = user;
+            document.getElementById('user-name').textContent = user.username;
+            document.getElementById('user-role').textContent = user.role;
+            document.getElementById('user-initial').textContent = user.username.charAt(0).toUpperCase();
+
+            // ACCESS CONTROL: Allow GERENTE and SUPER_ADMIN
+            if (!['GERENTE', 'SUPER_ADMIN'].includes(user.role)) {
+                alert('Acesso negado: Apenas Gerentes e Super Admins.');
+                window.location.href = '/reception.html';
+                return;
+            }
+
+            // Show Reports Link for both
+            if (document.getElementById('reports-menu-link'))
+                document.getElementById('reports-menu-link').style.display = 'flex';
+
+            // Show Users Menu only for SUPER_ADMIN
+            if (user.role === 'SUPER_ADMIN') {
+                document.getElementById('users-menu').style.display = 'flex';
+                document.getElementById('demo-section').style.display = 'block';
+                document.getElementById('full-reset-section').style.display = 'block';
+            }
+
+        });
+
+        function logout() {
+            if (confirm('Deseja realmente sair?')) {
+                fetch('/api/logout', { method: 'POST' }).then(() => window.location.href = '/login.html');
+            }
+        }
+    </script>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <i class="fas fa-ticket-alt"></i>
+            <h2>FILA-APP</h2>
+        </div>
+        <div class="sidebar-menu">
+            <div class="menu-section">
+                <div class="menu-section-title">Principal</div>
+                <a href="/dashboard.html" class="menu-item">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+            </div>
+            <div class="menu-section">
+                <div class="menu-section-title">Operações</div>
+                <a href="/index.html" class="menu-item">
+                    <i class="fas fa-desktop"></i>
+                    <span>Recepção</span>
+                </a>
+                <a href="/operator.html" target="_blank" class="menu-item">
+                    <i class="fas fa-headset"></i>
+                    <span>Painel Operador</span>
+                </a>
+                <a href="/totem.html" target="_blank" class="menu-item">
+                    <i class="fas fa-tablet-alt"></i>
+                    <span>Totem</span>
+                </a>
+                <a href="/panel.html" target="_blank" class="menu-item">
+                    <i class="fas fa-tv"></i>
+                    <span>Painel TV</span>
+                </a>
+            </div>
+            <div class="menu-section">
+                <div class="menu-section-title">Administração</div>
+                <a href="/reports.html" class="menu-item" id="reports-menu-link" style="display: none;">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Relatórios</span>
+                </a>
+                <a href="/users.html" id="users-menu" style="display: none;" class="menu-item">
+                    <i class="fas fa-users-cog"></i>
+                    <span>Gerenciar Usuários</span>
+                </a>
+                <a href="/settings.html" class="menu-item active">
+                    <i class="fas fa-cog"></i>
+                    <span>Configurações</span>
+                </a>
+                <a href="/about.html" class="menu-item">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Sobre</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+        <div class="topbar-left">
+            <h1><i class="fas fa-cogs"></i> Configurações do Sistema</h1>
+        </div>
+        <div class="topbar-right">
+            <div class="user-menu" onclick="logout()">
+                <div class="user-avatar" id="user-initial">A</div>
+                <div>
+                    <div style="font-weight: 600; font-size: 0.9rem;" id="user-name">Admin</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);" id="user-role">GERENTE</div>
+                </div>
+                <i class="fas fa-sign-out-alt" style="color: var(--danger);"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <!-- GENERAL SETTINGS -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <i class="fas fa-sliders-h"></i>
+                    Configurações Gerais
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label style="display:block; margin-bottom:8px; font-weight:600;"><i class="fas fa-hospital"></i> Nome
+                    da Instituição</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="institution-name" placeholder="Nome da Instituição"
+                        style="flex: 1; padding: 10px; border: 1px solid var(--border); border-radius: 8px;">
+                    <button onclick="saveSettings()" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Salvar
+                    </button>
+                </div>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">Este nome aparecerá no
+                    cabeçalho do Totem e do Painel.</p>
+            </div>
+
+            <!-- PRINT CONFIGURATION -->
+            <div class="form-group" style="margin-top: 25px; padding-top: 20px; border-top: 1px solid var(--border);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <label style="display:block; font-weight:600;"><i class="fas fa-print"></i> Impressão de
+                            Senhas</label>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">Habilita a abertura automática da
+                            janela
+                            de impressão ao gerar senhas.</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="print-enabled" onchange="saveSettings()">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTOR MANAGEMENT -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <i class="fas fa-building"></i>
+                    Gerenciar Setores
+                </div>
+                <button class="btn btn-primary" onclick="openSectorModal()">
+                    <i class="fas fa-plus"></i> Novo Setor
+                </button>
+            </div>
+            <table id="sectors-table">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Sala</th>
+                        <th>Prefixo</th>
+                        <th>Status</th>
+                        <th>Nome do Paciente</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Sectors here -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- DANGER ZONE -->
+        <div class="card" style="border: 1px solid var(--danger);">
+            <div class="card-header" style="border-bottom-color: rgba(239, 68, 68, 0.2);">
+                <div class="card-title" style="color: var(--danger);">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Zona de Perigo
+                </div>
+            </div>
+
+            <!-- RESETAR FILA (Available for GERENTE and SUPER_ADMIN) -->
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; border-bottom: 1px solid var(--border);">
+                <div>
+                    <h3 style="font-size: 1rem; font-weight: 600;">Resetar Fila de Atendimento</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-muted);">Reinicia a contagem de senhas e cancela as
+                        ativas. O histórico é preservado para relatórios.</p>
+                </div>
+                <button onclick="resetQueue()" class="btn btn-danger">
+                    <i class="fas fa-redo"></i>
+                    Resetar Fila
+                </button>
+            </div>
+
+            <!-- CARREGAR DEMO (SUPER_ADMIN only) -->
+            <div id="demo-section" style="display: none; padding: 15px 0; border-bottom: 1px solid var(--border);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h3 style="font-size: 1rem; font-weight: 600;">Carregar Dados de Demonstração</h3>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">Popula o sistema com ~200 senhas dos
+                            últimos 7 dias para apresentações.</p>
+                    </div>
+                    <button onclick="loadDemo()" class="btn" style="background: var(--warning); color: white;">
+                        <i class="fas fa-database"></i>
+                        Carregar Demo
+                    </button>
+                </div>
+            </div>
+
+            <!-- ZERAR TUDO (SUPER_ADMIN only) -->
+            <div id="full-reset-section" style="display: none; padding-top: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h3 style="font-size: 1rem; font-weight: 600; color: var(--danger);">⚠️ Zerar Tudo (Produção)
+                        </h3>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">Remove TODOS os registros de senhas
+                            permanentemente. Use apenas após demos para iniciar produção limpa.</p>
+                    </div>
+                    <button onclick="fullReset()" class="btn" style="background: #7f1d1d; color: white;">
+                        <i class="fas fa-trash-alt"></i>
+                        Zerar Tudo
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTOR MODAL -->
+    <div id="sector-modal" class="modal"
+        style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); align-items:center; justify-content:center; z-index:2000;">
+        <div class="modal-content"
+            style="background:white; padding:30px; border-radius:12px; width:400px; max-width:90%;">
+            <h2 id="modal-title" style="margin-bottom:20px;">Novo Setor</h2>
+            <input type="hidden" id="sector-id">
+            <div style="margin-bottom:15px;">
+                <label style="display:block; margin-bottom:5px; font-weight:600;">Nome do Setor</label>
+                <input type="text" id="sector-name"
+                    style="width:100%; padding:10px; border:1px solid #e2e8f0; border-radius:8px;">
+            </div>
+            <div style="margin-bottom:15px;">
+                <label style="display:block; margin-bottom:5px; font-weight:600;">Sala / Local</label>
+                <input type="text" id="sector-room"
+                    style="width:100%; padding:10px; border:1px solid #e2e8f0; border-radius:8px;">
+            </div>
+            <div style="margin-bottom:15px;">
+                <label style="display:block; margin-bottom:5px; font-weight:600;">Prefixo da Senha</label>
+                <input type="text" id="sector-prefix" maxlength="1"
+                    style="width:100%; padding:10px; border:1px solid #e2e8f0; border-radius:8px; text-transform:uppercase;">
+            </div>
+            <div style="margin-bottom: 20px;">
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                    <input type="checkbox" id="sector-active" checked style="width: auto;">
+                    <span style="font-weight:600;">Ativo no Totem</span>
+                </label>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                    <input type="checkbox" id="sector-collect-name" style="width: auto;">
+                    <span style="font-weight:600;">Coletar Nome do Paciente</span>
+                </label>
+                <p style="font-size: 0.85rem; color: #64748b; margin-top: 5px; margin-left: 28px;">
+                    Quando ativo, a recepção solicitará o nome ao gerar senha
+                </p>
+            </div>
+            <div style="display:flex; gap:10px; justify-content:flex-end;">
+                <button class="btn" style="background:#64748b; color:white;"
+                    onclick="closeSectorModal()">Cancelar</button>
+                <button class="btn btn-primary" onclick="saveSector()">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadSettings() {
+            try {
+                const res = await fetch('/api/settings');
+                const settings = await res.json();
+                if (settings.institution_name) {
+                    document.getElementById('institution-name').value = settings.institution_name;
+                }
+                document.getElementById('print-enabled').checked = settings.print_enabled == 1;
+            } catch (error) {
+                console.error("Erro ao carregar configurações", error);
+            }
+        }
+
+        async function saveSettings() {
+            const nameInput = document.getElementById('institution-name');
+            const printInput = document.getElementById('print-enabled');
+
+            const name = nameInput.value;
+            if (!name) return alert("Por favor, insira um nome.");
+
+            const printEnabled = printInput.checked ? 1 : 0;
+            try {
+                const res = await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        institution_name: name,
+                        print_enabled: printEnabled
+                    })
+                });
+
+                if (!res.ok) throw new Error("Falha no servidor");
+
+                // Show a brief toast or alert
+                console.log('Configurações salvas com sucesso');
+                // Only alert if it wasn't an automatic toggle save or add a small label
+                // alert('Configurações salvas!');
+            } catch (error) {
+                console.error(error);
+                alert("Erro ao salvar: " + error.message);
+            }
+        }
+
+        async function resetQueue() {
+            if (!confirm('ATENÇÃO: Isso irá resetar a contagem e cancelar senhas ativas. Confirma?')) return;
+            try {
+                const res = await fetch('/api/tickets/reset', { method: 'POST' });
+                if (res.ok) alert('Fila resetada! A contagem voltou ao início.');
+                else alert("Erro ao resetar");
+            } catch (error) {
+                console.error(error);
+                alert("Erro de conexão");
+            }
+        }
+
+        async function loadDemo() {
+            if (!confirm('Carregar dados de demonstração?\n\nIsso criará:\n• Usuários padrão (admin, gerente, operadores)\n• ~200 senhas históricas dos últimos 7 dias')) return;
+            try {
+                const res = await fetch('/api/tickets/load-demo', { method: 'POST' });
+                if (res.ok) {
+                    const data = await res.json();
+                    alert(`✅ Demo carregada com sucesso!\n\n👥 Usuários: ${data.users} criados\n🎫 Senhas: ${data.tickets} criadas\n\n📊 Agora você pode testar o sistema completo!\n\nCredenciais:\n• admin / admin123 (SUPER_ADMIN)\n• gerente / gerente123 (GERENTE)\n• operador1 / op123 (OPERADOR)`);
+                } else {
+                    alert("Erro ao carregar demo");
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Erro de conexão");
+            }
+        }
+
+        async function fullReset() {
+            const confirmation = prompt('⚠️ ATENÇÃO CRÍTICA!\n\nIsso apagará PERMANENTEMENTE todos os registros de senhas.\nEsta ação é IRREVERSÍVEL!\n\nDigite "ZERAR TUDO" para confirmar:');
+
+            if (confirmation !== 'ZERAR TUDO') {
+                alert('Operação cancelada.');
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/tickets/full-reset', { method: 'POST' });
+                if (res.ok) {
+                    alert('✅ Sistema completamente zerado!\n\nTodos os registros foram removidos.\nO sistema está pronto para produção.');
+                    location.reload();
+                } else {
+                    alert("Erro ao zerar sistema");
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Erro de conexão");
+            }
+        }
+
+        // --- SECTOR MANAGEMENT ---
+        let currentSectors = [];
+
+        async function loadSectors() {
+            try {
+                const res = await fetch('/api/sectors');
+                currentSectors = await res.json();
+                renderSectorsTable();
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        function renderSectorsTable() {
+            const tbody = document.querySelector('#sectors-table tbody');
+            tbody.innerHTML = '';
+
+            currentSectors.forEach(s => {
+                const statusBadge = s.active ?
+                    `<button class="btn" style="padding: 2px 8px; font-size: 0.75rem; background: #dcfce7; color: #166534; border: 1px solid #bbf7d0;" onclick="toggleSectorStatus(${s.id}, 0)">
+                        <i class="fas fa-check-circle"></i> Ativo
+                    </button>` :
+                    `<button class="btn" style="padding: 2px 8px; font-size: 0.75rem; background: #fee2e2; color: #991b1b; border: 1px solid #fecaca;" onclick="toggleSectorStatus(${s.id}, 1)">
+                        <i class="fas fa-times-circle"></i> Inativo
+                    </button>`;
+
+                const nameToggle = s.collect_patient_name ?
+                    `<button class="btn" style="padding: 2px 8px; font-size: 0.75rem; background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe;" onclick="togglePatientName(${s.id}, 0)">
+                        <i class="fas fa-user-check"></i> Sim
+                    </button>` :
+                    `<button class="btn" style="padding: 2px 8px; font-size: 0.75rem; background: #f3f4f6; color: #6b7280; border: 1px solid #e5e7eb;" onclick="togglePatientName(${s.id}, 1)">
+                        <i class="fas fa-user-times"></i> Não
+                    </button>`;
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${s.name}</strong></td>
+                        <td>${s.room || '-'}</td>
+                        <td><span class="badge badge-info">${s.prefix}</span></td>
+                        <td>${statusBadge}</td>
+                        <td>${nameToggle}</td>
+                        <td>
+                            <button class="btn" style="padding:5px 10px; background:var(--warning); color:white;" onclick="openEditModal(${s.id})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn" style="padding:5px 10px; background:var(--danger); color:white;" onclick="deleteSector(${s.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        async function toggleSectorStatus(id, newStatus) {
+            const sector = currentSectors.find(s => s.id === id);
+            if (!sector) return;
+
+            try {
+                const res = await fetch(`/api/sectors/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: sector.name,
+                        room: sector.room,
+                        prefix: sector.prefix,
+                        active: newStatus,
+                        collect_patient_name: sector.collect_patient_name
+                    })
+                });
+
+                if (res.ok) {
+                    loadSectors();
+                } else {
+                    alert("Erro ao alterar status");
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        async function togglePatientName(id, newValue) {
+            const sector = currentSectors.find(s => s.id === id);
+            if (!sector) return;
+
+            try {
+                const res = await fetch(`/api/sectors/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: sector.name,
+                        room: sector.room,
+                        prefix: sector.prefix,
+                        active: sector.active,
+                        collect_patient_name: newValue
+                    })
+                });
+
+                if (res.ok) {
+                    loadSectors();
+                } else {
+                    alert("Erro ao alterar configuração de nome");
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        function openSectorModal() {
+            document.getElementById('sector-id').value = '';
+            document.getElementById('sector-name').value = '';
+            document.getElementById('sector-room').value = '';
+            document.getElementById('sector-prefix').value = '';
+            document.getElementById('sector-active').checked = true;
+            document.getElementById('sector-collect-name').checked = false;
+            document.getElementById('modal-title').textContent = 'Novo Setor';
+            document.getElementById('sector-modal').style.display = 'flex';
+        }
+
+        function openEditModal(id) {
+            const sector = currentSectors.find(s => s.id === id);
+            if (!sector) return;
+
+            document.getElementById('sector-id').value = sector.id;
+            document.getElementById('sector-name').value = sector.name;
+            document.getElementById('sector-room').value = sector.room || '';
+            document.getElementById('sector-prefix').value = sector.prefix;
+            document.getElementById('sector-active').checked = sector.active == 1;
+            document.getElementById('sector-collect-name').checked = sector.collect_patient_name == 1;
+            document.getElementById('modal-title').textContent = 'Editar Setor';
+            document.getElementById('sector-modal').style.display = 'flex';
+        }
+
+        function closeSectorModal() {
+            document.getElementById('sector-modal').style.display = 'none';
+        }
+
+        async function saveSector() {
+            const id = document.getElementById('sector-id').value;
+            const name = document.getElementById('sector-name').value;
+            const room = document.getElementById('sector-room').value;
+            const prefix = document.getElementById('sector-prefix').value.toUpperCase();
+            const active = document.getElementById('sector-active').checked ? 1 : 0;
+            const collect_patient_name = document.getElementById('sector-collect-name').checked ? 1 : 0;
+
+            if (!name || !prefix) return alert("Nome e Prefixo obrigatórios");
+
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `/api/sectors/${id}` : '/api/sectors';
+
+            try {
+                const res = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, room, prefix, active, collect_patient_name })
+                });
+
+                if (res.ok) {
+                    closeSectorModal();
+                    loadSectors();
+                } else {
+                    const err = await res.json();
+                    alert("Erro ao salvar: " + err.error);
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Erro de conexão");
+            }
+        }
+
+        async function deleteSector(id) {
+            if (!confirm("Tem certeza? Isso pode afetar históricos.")) return;
+            try {
+                const res = await fetch(`/api/sectors/${id}`, { method: 'DELETE' });
+                if (res.ok) loadSectors();
+                else alert("Erro ao deletar");
+            } catch (e) { console.error(e); }
+        }
+
+        loadSettings();
+        loadSectors();
+    </script>
+</body>
+
+</html>

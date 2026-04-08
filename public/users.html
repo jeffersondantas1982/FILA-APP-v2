@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciar Usuários | FILA-APP</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <script>
+        let currentUser = null;
+        fetch('/api/me').then(res => {
+            if (!res.ok) window.location.href = '/login.html';
+            return res.json();
+        }).then(user => {
+            currentUser = user;
+            if (user.role !== 'SUPER_ADMIN') {
+                alert('Acesso negado. Apenas Super Admins podem acessar esta página.');
+                window.location.href = '/dashboard.html';
+            }
+            document.getElementById('user-name').textContent = user.username;
+            document.getElementById('user-initial').textContent = user.username.charAt(0).toUpperCase();
+
+            // Inicializar dados após confirmar autenticação
+            loadUsers();
+            checkPermissions();
+        });
+
+        function logout() {
+            if (confirm('Deseja realmente sair?')) {
+                fetch('/api/logout', { method: 'POST' }).then(() => window.location.href = '/login.html');
+            }
+        }
+    </script>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <i class="fas fa-ticket-alt"></i>
+            <h2>FILA-APP</h2>
+        </div>
+        <div style="padding: 20px 0;">
+            <a href="/dashboard.html" class="menu-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="/index.html" class="menu-item">
+                <i class="fas fa-desktop"></i>
+                <span>Recepção</span>
+            </a>
+            <a href="/operator.html" class="menu-item">
+                <i class="fas fa-headset"></i>
+                <span>Painel Operador</span>
+            </a>
+            <div class="menu-section">
+                <div class="menu-section-title">Administração</div>
+                <a href="/reports.html" class="menu-item" id="reports-menu-link" style="display: none;">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Relatórios</span>
+                </a>
+                <a href="/users.html" class="menu-item active">
+                    <i class="fas fa-users-cog"></i>
+                    <span>Gerenciar Usuários</span>
+                </a>
+                <a href="/settings.html" class="menu-item">
+                    <i class="fas fa-cog"></i>
+                    <span>Configurações</span>
+                </a>
+                <a href="/about.html" class="menu-item">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Sobre</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+        <h1><i class="fas fa-users-cog"></i> Gerenciar Usuários</h1>
+        <div class="user-menu" onclick="logout()">
+            <div class="user-avatar" id="user-initial">S</div>
+            <div>
+                <div style="font-weight: 600; font-size: 0.9rem;" id="user-name">Super Admin</div>
+            </div>
+            <i class="fas fa-sign-out-alt" style="color: var(--danger);"></i>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <!-- CRIAR USUÁRIO -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-user-plus"></i>
+                <h2>Criar Novo Usuário</h2>
+            </div>
+            <form id="create-form">
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+                    <div class="form-group" style="margin: 0;">
+                        <label><i class="fas fa-user"></i> Nome de Usuário</label>
+                        <input type="text" id="new-username" required>
+                    </div>
+                    <div class="form-group" style="margin: 0;">
+                        <label><i class="fas fa-lock"></i> Senha</label>
+                        <input type="password" id="new-password" required>
+                    </div>
+                    <div class="form-group" style="margin: 0;">
+                        <label><i class="fas fa-user-tag"></i> Perfil</label>
+                        <select id="new-role" required>
+                            <option value="">Selecione...</option>
+                            <option value="SUPER_ADMIN">Super Admin</option>
+                            <option value="GERENTE">Gerente</option>
+                            <option value="OPERADOR">Operador</option>
+                            <option value="PORTEIRO">Porteiro</option>
+                            <option value="RECEPCIONISTA">Recepcionista</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary" style="margin-top: 15px;">
+                    <i class="fas fa-plus-circle"></i>
+                    Criar Usuário
+                </button>
+            </form>
+        </div>
+
+        <!-- LISTA DE USUÁRIOS -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-list"></i>
+                <h2>Usuários Cadastrados</h2>
+            </div>
+            <table id="users-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Usuário</th>
+                        <th>Perfil</th>
+                        <th>Criado em</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Dados -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- MODAL DE EDIÇÃO -->
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <div
+                style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border);">
+                <i class="fas fa-edit" style="color: var(--primary); font-size: 1.3rem;"></i>
+                <h2 style="font-size: 1.2rem; font-weight: 700;">Editar Usuário</h2>
+            </div>
+            <form id="edit-form">
+                <input type="hidden" id="edit-id">
+                <div class="form-group">
+                    <label><i class="fas fa-user"></i> Nome de Usuário</label>
+                    <input type="text" id="edit-username" required>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-lock"></i> Nova Senha (deixe em branco para manter)</label>
+                    <input type="password" id="edit-password">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-user-tag"></i> Perfil</label>
+                    <select id="edit-role" required>
+                        <option value="SUPER_ADMIN">Super Admin</option>
+                        <option value="GERENTE">Gerente</option>
+                        <option value="OPERADOR">Operador</option>
+                        <option value="PORTEIRO">Porteiro</option>
+                        <option value="RECEPCIONISTA">Recepcionista</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">
+                        <i class="fas fa-save"></i> Salvar
+                    </button>
+                    <button type="button" onclick="closeEditModal()" class="btn btn-secondary" style="flex: 1;">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function getRoleBadge(role) {
+            const badges = {
+                'SUPER_ADMIN': '<span class="badge badge-super">Super Admin</span>',
+                'GERENTE': '<span class="badge badge-manager">Gerente</span>',
+                'OPERADOR': '<span class="badge badge-operator">Operador</span>',
+                'PORTEIRO': '<span class="badge badge-doorman">Porteiro</span>',
+                'RECEPCIONISTA': '<span class="badge badge-reception">Recepcionista</span>'
+            };
+            return badges[role] || role;
+        }
+
+        async function loadUsers() {
+            const res = await fetch('/api/users');
+            const users = await res.json();
+            const tbody = document.querySelector('#users-table tbody');
+            tbody.innerHTML = '';
+
+            users.forEach(u => {
+                const date = new Date(u.created_at).toLocaleDateString('pt-BR');
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>#${u.id}</strong></td>
+                        <td><i class="fas fa-user" style="color: var(--text-muted); margin-right: 8px;"></i>${u.username}</td>
+                        <td>${getRoleBadge(u.role)}</td>
+                        <td>${date}</td>
+                        <td>
+                            <button onclick="editUser(${u.id}, '${u.username}', '${u.role}')" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.85rem; margin-right: 5px;">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="deleteUser(${u.id})" class="btn btn-danger" style="padding: 6px 12px; font-size: 0.85rem;">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        document.getElementById('create-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('new-username').value;
+            const password = document.getElementById('new-password').value;
+            const role = document.getElementById('new-role').value;
+
+            const res = await fetch('/api/users', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password, role })
+            });
+
+            if (res.ok) {
+                alert('✅ Usuário criado com sucesso!');
+                document.getElementById('create-form').reset();
+                loadUsers();
+            } else {
+                const err = await res.json();
+                alert('❌ Erro: ' + err.error);
+            }
+        };
+
+        function editUser(id, username, role) {
+            document.getElementById('edit-id').value = id;
+            document.getElementById('edit-username').value = username;
+            document.getElementById('edit-role').value = role;
+            document.getElementById('edit-password').value = '';
+            document.getElementById('edit-modal').style.display = 'flex';
+        }
+
+        // Mover verificações para dentro do fluxo de autenticação ou usar currentUser
+        async function checkPermissions() {
+            if (!currentUser) return;
+
+            if (['GERENTE', 'SUPER_ADMIN'].includes(currentUser.role)) {
+                if (document.getElementById('reports-menu-link'))
+                    document.getElementById('reports-menu-link').style.display = 'flex';
+            }
+
+            if (currentUser.role === 'SUPER_ADMIN') {
+                // Se houvesse um ID users-menu, mas o active se encarrega
+            }
+        }
+
+        function closeEditModal() {
+            document.getElementById('edit-modal').style.display = 'none';
+        }
+
+        document.getElementById('edit-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('edit-id').value;
+            const username = document.getElementById('edit-username').value;
+            const password = document.getElementById('edit-password').value;
+            const role = document.getElementById('edit-role').value;
+
+            const res = await fetch(`/api/users/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password, role })
+            });
+
+            if (res.ok) {
+                alert('✅ Usuário atualizado!');
+                closeEditModal();
+                loadUsers();
+            } else {
+                const err = await res.json();
+                alert('❌ Erro: ' + err.error);
+            }
+        };
+
+        async function deleteUser(id) {
+            if (!confirm('⚠️ Tem certeza que deseja deletar este usuário?')) return;
+
+            const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                alert('✅ Usuário deletado!');
+                loadUsers();
+            } else {
+                const err = await res.json();
+                alert('❌ Erro: ' + err.error);
+            }
+        }
+    </script>
+</body>
+
+</html>

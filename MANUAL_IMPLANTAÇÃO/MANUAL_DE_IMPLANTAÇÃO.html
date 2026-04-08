@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual de Implantação - FILA-APP</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar-width: 280px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+            margin: 0;
+            display: flex;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: #1e293b;
+            color: white;
+            position: fixed;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .sidebar h1 {
+            font-size: 1.25rem;
+            margin-bottom: 30px;
+            color: #3b82f6;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .nav-item {
+            margin-bottom: 5px;
+        }
+
+        .nav-link {
+            display: block;
+            padding: 10px 15px;
+            color: #94a3b8;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+
+        .nav-link.active {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .main-content {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 40px 60px;
+            max-width: 900px;
+        }
+
+        section {
+            margin-bottom: 60px;
+            scroll-margin-top: 40px;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+            color: #0f172a;
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            margin-top: 30px;
+            color: #334155;
+        }
+
+        p {
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .setup-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        code {
+            background: #f1f5f9;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-family: 'Consolas', monospace;
+            font-size: 0.9em;
+            color: #e11d48;
+        }
+
+        pre {
+            background: #1e293b;
+            color: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+
+        .btn-install {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            background: #3b82f6;
+            color: white !important;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+
+        .btn-install:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .alert-doc {
+            padding: 15px 20px;
+            border-left: 4px solid #3b82f6;
+            background: #eff6ff;
+            color: #1e40af;
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+        }
+
+        .step-num {
+            display: inline-flex;
+            width: 28px;
+            height: 28px;
+            background: #3b82f6;
+            color: white;
+            border-radius: 50%;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar">
+        <h1><i class="fas fa-microchip"></i> FILA-APP</h1>
+        <ul class="nav-list">
+            <li class="nav-item"><a href="#intro" class="nav-link active">Introdução</a></li>
+            <li class="nav-item"><a href="#prep" class="nav-link">Preparação</a></li>
+            <li class="nav-item"><a href="#nodejs" class="nav-link">1. Instalar Node.js</a></li>
+            <li class="nav-item"><a href="#mysql" class="nav-link">2. Instalar MySQL</a></li>
+            <li class="nav-item"><a href="#wizard" class="nav-link">3. Wizard de Instalação</a></li>
+            <li class="nav-item"><a href="#final" class="nav-link">4. Pós-Instalação</a></li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <section id="intro">
+            <h2>Manual de Implantação</h2>
+            <p>Este guia orienta o implantador na configuração do ambiente completo para o <strong>FILA-APP</strong>,
+                desde a instalação das dependências até a inicialização do sistema.</p>
+            <div class="alert-doc">
+                <i class="fas fa-info-circle"></i>
+                O sistema foi projetado para ser "Auto-Instalável", exigindo apenas que os pré-requisitos básicos
+                estejam presentes no servidor.
+            </div>
+        </section>
+
+        <section id="prep">
+            <h2>Preparação</h2>
+            <p>Localize a pasta <code>INSTALADORES</code> no diretório raiz do projeto. Nela você encontrará os arquivos
+                necessários:</p>
+            <div class="setup-card">
+                <ul style="margin: 0; padding-left: 20px;">
+                    <li style="margin-bottom: 10px;"><strong>Node.js:</strong> Necessário para rodar o servidor de
+                        aplicação.</li>
+                    <li><strong>MySQL:</strong> Necessário para o armazenamento persistente de dados.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="nodejs">
+            <h2>1. Instalando Node.js</h2>
+            <p>O Node.js é o motor do sistema. Sem ele, a aplicação não inicia.</p>
+            <div class="setup-card">
+                <p><span class="step-num">1</span> Execute o instalador do Node.js (v16 ou superior).</p>
+                <p><span class="step-num">2</span> Avance todas as etapas mantendo as configurações padrão.</p>
+                <p><span class="step-num">3</span> Ao finalizar, abra um terminal (CMD) e digite <code>node -v</code>
+                    para confirmar.</p>
+            </div>
+        </section>
+
+        <section id="mysql">
+            <h2>2. Instalando MySQL</h2>
+            <p>O banco de dados armazena as senhas, usuários e métricas.</p>
+            <div class="setup-card">
+                <p><span class="step-num">1</span> Execute o instalador do MySQL (Recomendado: MySQL Community Server
+                    8.0).</p>
+                <p><span class="step-num">2</span> Configure a senha do usuário <code>root</code> (você precisará dela
+                    no Wizard).</p>
+                <p><span class="step-num">3</span> Certifique-se de que o serviço está em execução.</p>
+            </div>
+        </section>
+
+        <section id="wizard">
+            <h2>3. Wizard de Instalação</h2>
+            <p>Com os componentes instalados, o sistema está pronto para ser configurado.</p>
+            <div class="setup-card">
+                <p><span class="step-num">1</span> Execute o arquivo <code>3-START.bat</code>.</p>
+                <p><span class="step-num">2</span> Acesse <code>http://localhost:3000</code> no seu navegador.</p>
+                <p><span class="step-num">3</span> O sistema detectará que não está configurado e abrirá o
+                    <strong>Wizard de Instalação</strong>.</p>
+                <div style="margin-top: 15px; padding: 15px; background: #f8fafc; border-radius: 8px;">
+                    <strong>Destaques do Wizard:</strong>
+                    <ul style="margin-top: 10px; font-size: 0.9rem; color: #64748b;">
+                        <li>Verificação automática de componentes.</li>
+                        <li>Criação automática do banco de dados e tabelas.</li>
+                        <li>Geração de perfis e dados de teste (opcional).</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="final">
+            <h2>4. Pós-Instalação</h2>
+            <p>Após concluir o Wizard, o sistema estará pronto para uso imediato.</p>
+            <div class="setup-card">
+                <h3>Acessos Iniciais</h3>
+                <p><strong>URL:</strong> <code>http://localhost:3000/login.html</code></p>
+                <p><strong>Usuário Mestre:</strong> <code>admin</code></p>
+                <p><strong>Senha Padrão:</strong> <code>123456</code></p>
+
+                <div class="alert-doc" style="border-color: #f59e0b; background: #fffbeb; color: #92400e;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    IMPORTANTE: Recomenda-se alterar a senha do usuário admin logo após o primeiro acesso.
+                </div>
+            </div>
+        </section>
+
+        <footer
+            style="margin-top: 100px; padding-top: 20px; border-top: 1px solid #e2e8f0; color: #94a3b8; font-size: 0.85rem;">
+            FILA-APP v1.0 • Guia de Implantação do Sistema
+        </footer>
+    </div>
+
+    <script>
+        // Simples scroll spy
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (pageYOffset >= sectionTop - 60) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').includes(current)) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

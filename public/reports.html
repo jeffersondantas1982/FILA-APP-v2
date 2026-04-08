@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FILA-APP | Relatórios</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        @media print {
+            @page {
+                margin: 1cm;
+            }
+
+            html,
+            body {
+                background: white !important;
+                color: black !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                height: auto !important;
+                overflow: visible !important;
+            }
+
+            .sidebar,
+            .topbar,
+            .no-print,
+            .btn,
+            .card-header i {
+                display: none !important;
+            }
+
+            .main-content {
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                position: relative !important;
+                left: 0 !important;
+                top: 0 !important;
+                display: block !important;
+                overflow: visible !important;
+            }
+
+            .card {
+                border: 0.5pt solid #eee !important;
+                box-shadow: none !important;
+                margin-bottom: 10pt !important;
+                padding: 10pt !important;
+                display: block !important;
+                page-break-inside: avoid;
+            }
+
+            table {
+                width: 100% !important;
+                border-collapse: collapse !important;
+                page-break-inside: auto;
+            }
+
+            th,
+            td {
+                border: 0.5pt solid #ccc !important;
+                padding: 6pt !important;
+                font-size: 10pt !important;
+                color: black !important;
+            }
+
+            .badge {
+                border: 1px solid #ccc !important;
+                background: transparent !important;
+                color: black !important;
+                padding: 2px 5px !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        let currentUser = null;
+        fetch('/api/me').then(res => {
+            if (!res.ok) window.location.href = '/login.html';
+            return res.json();
+        }).then(user => {
+            currentUser = user;
+
+            // Access Control: Only GERENTE and SUPER_ADMIN
+            if (!['GERENTE', 'SUPER_ADMIN'].includes(user.role)) {
+                alert("Acesso Negado: Apenas Gerentes podem acessar relatórios.");
+                window.location.href = '/dashboard.html';
+                return;
+            }
+
+            const initial = document.getElementById('user-initial');
+            const name = document.getElementById('user-name');
+            if (initial) initial.textContent = user.username.charAt(0).toUpperCase();
+            if (name) name.textContent = user.username;
+
+            // Show admin menus
+            if (['GERENTE', 'SUPER_ADMIN'].includes(user.role)) {
+                const reportsLink = document.getElementById('reports-menu-link');
+                if (reportsLink) reportsLink.style.display = 'flex';
+
+                // Show users menu only for SUPER_ADMIN
+                if (user.role === 'SUPER_ADMIN') {
+                    document.getElementById('users-menu').style.display = 'flex';
+                }
+            }
+        });
+
+        function logout() {
+            if (confirm('Deseja realmente sair?')) {
+                fetch('/api/logout', { method: 'POST' }).then(() => window.location.href = '/login.html');
+            }
+        }
+    </script>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <i class="fas fa-ticket-alt"></i>
+            <h2>FILA-APP</h2>
+        </div>
+        <div style="padding: 20px 0;">
+            <a href="/dashboard.html" class="menu-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="/index.html" class="menu-item">
+                <i class="fas fa-desktop"></i>
+                <span>Recepção</span>
+            </a>
+            <a href="/operator.html" target="_blank" class="menu-item">
+                <i class="fas fa-headset"></i>
+                <span>Painel Operador</span>
+            </a>
+            <a href="/reports.html" class="menu-item active" id="reports-menu-link" style="display: none;">
+                <i class="fas fa-file-alt"></i>
+                <span>Relatórios</span>
+            </a>
+            <div class="menu-section">
+                <div class="menu-section-title">Administração</div>
+                <a href="/users.html" class="menu-item" id="users-menu" style="display: none;">
+                    <i class="fas fa-users-cog"></i>
+                    <span>Gerenciar Usuários</span>
+                </a>
+                <a href="/settings.html" class="menu-item">
+                    <i class="fas fa-cog"></i>
+                    <span>Configurações</span>
+                </a>
+                <a href="/about.html" class="menu-item">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Sobre</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+        <h1><i class="fas fa-file-alt"></i> Relatórios</h1>
+        <div class="user-menu" onclick="logout()">
+            <div class="user-avatar" id="user-initial">U</div>
+            <div>
+                <div style="font-weight: 600; font-size: 0.9rem;" id="user-name">Usuário</div>
+            </div>
+            <i class="fas fa-sign-out-alt" style="color: var(--danger);"></i>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <!-- FILTERS -->
+        <div class="card no-print">
+            <div class="card-header">
+                <i class="fas fa-filter"></i>
+                <h2>Filtros de Relatório</h2>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                <div class="form-group">
+                    <label>Data Início</label>
+                    <input type="date" id="filter-start" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Data Fim</label>
+                    <input type="date" id="filter-end" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Setor</label>
+                    <select id="filter-sector" class="form-control">
+                        <option value="">Todos</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="filter-status" class="form-control">
+                        <option value="">Todos</option>
+                        <option value="completed">Concluído</option>
+                        <option value="canceled">Cancelado</option>
+                        <option value="not_shown">Não Compareceu</option>
+                        <option value="pending">Pendente</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Tipo</label>
+                    <select id="filter-type" class="form-control">
+                        <option value="">Todos</option>
+                        <option value="normal">Normal</option>
+                        <option value="priority">Prioridade</option>
+                    </select>
+                </div>
+            </div>
+            <div style="margin-top: 20px; display: flex; gap: 10px;" class="no-print">
+                <button class="btn btn-primary" onclick="loadReport()">
+                    <i class="fas fa-search"></i> Filtrar
+                </button>
+                <button class="btn btn-secondary" onclick="window.print()">
+                    <i class="fas fa-print"></i> Imprimir / PDF
+                </button>
+                <button class="btn" style="background: #10b981; color: white;" onclick="exportToCSV()">
+                    <i class="fas fa-file-csv"></i> Exportar CSV
+                </button>
+            </div>
+        </div> <!-- Fim do Card de Filtros -->
+
+
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-history"></i>
+                <h2>Histórico Geral de Atendimentos</h2>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table id="report-table">
+                    <thead>
+                        <tr>
+                            <th>Senha</th>
+                            <th>Setor</th>
+                            <th>Tipo</th>
+                            <th>Status</th>
+                            <th>Atendente</th>
+                            <th>Data/Hora</th>
+                        </tr>
+                    </thead>
+                    <tbody id="report-body">
+                        <!-- Dados via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadFilters() {
+            // Set default dates (Current Month)
+            const today = new Date();
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+
+            document.getElementById('filter-start').valueAsDate = firstDay;
+            document.getElementById('filter-end').valueAsDate = today;
+
+            // Load Sectors
+            const res = await fetch('/api/sectors');
+            const sectors = await res.json();
+            const select = document.getElementById('filter-sector');
+            sectors.forEach(s => {
+                select.innerHTML += `<option value="${s.id}">${s.name}</option>`;
+            });
+
+            loadReport();
+        }
+
+        let currentReportData = [];
+
+        async function loadReport() {
+            const body = document.getElementById('report-body');
+            try {
+                const start = document.getElementById('filter-start').value;
+                const end = document.getElementById('filter-end').value;
+                const sector = document.getElementById('filter-sector').value;
+                const status = document.getElementById('filter-status').value;
+                const type = document.getElementById('filter-type').value;
+
+                console.log('[DEBUG] Filtros:', { start, end, sector, status, type });
+
+                const params = new URLSearchParams({ start, end });
+                if (sector) params.append('sector', sector);
+                if (status) params.append('status', status);
+                if (type) params.append('type', type);
+
+                body.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">Carregando...</td></tr>';
+
+                const res = await fetch(`/api/tickets/report/list?${params}`);
+                if (!res.ok) {
+                    const error = await res.json();
+                    throw new Error(error.error || 'Erro ao carregar relatórios');
+                }
+
+                currentReportData = await res.json();
+                console.log('[DEBUG] Dados recebidos:', currentReportData);
+
+                body.innerHTML = '';
+
+                if (!Array.isArray(currentReportData) || currentReportData.length === 0) {
+                    body.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">Nenhum registro encontrado.</td></tr>';
+                    return;
+                }
+
+                currentReportData.forEach(item => {
+                    const tr = document.createElement('tr');
+                    const typeBadge = item.type === 'priority' ? '<span class="badge warning" style="background:#fef3c7; color:#92400e;">Prioridade</span>' : 'Normal';
+                    tr.innerHTML = `
+                        <td style="font-weight: 600;">${item.number}</td>
+                        <td>${item.sector_name}</td>
+                        <td>${typeBadge}</td>
+                        <td>
+                            <span class="badge ${item.status}">${translateStatus(item.status)}</span>
+                        </td>
+                        <td>${item.attendant_name || '-'}</td>
+                        <td>${new Date(item.updated_at).toLocaleString('pt-BR')}</td>
+                    `;
+                    body.appendChild(tr);
+                });
+            } catch (error) {
+                console.error('[ERRO RELATÓRIO]', error);
+                body.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 20px; color: var(--danger);">
+                    <i class="fas fa-exclamation-triangle"></i> Erro: ${error.message}
+                </td></tr>`;
+                alert('Erro ao carregar relatório: ' + error.message);
+            }
+        }
+
+        function exportToCSV() {
+            if (currentReportData.length === 0) {
+                alert("Não há dados para exportar. Por favor, aplique um filtro primeiro.");
+                return;
+            }
+
+            const headers = ["Senha", "Setor", "Tipo", "Status", "Atendente", "Data/Hora"];
+            const csvContent = [
+                headers.join(";"), // Usando ponto e vírgula para compatibilidade com Excel em PT-BR
+                ...currentReportData.map(t => [
+                    t.number,
+                    t.sector_name,
+                    t.type,
+                    translateStatus(t.status),
+                    t.attendant_name || "",
+                    new Date(t.updated_at).toLocaleString('pt-BR').replace(",", "")
+                ].join(";"))
+            ].join("\n");
+
+            const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `relatorio_atendimentos_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+
+        function translateStatus(s) {
+            const map = {
+                'pending': 'Pendente',
+                'calling': 'Chamando',
+                'in_service': 'Em Atendimento',
+                'completed': 'Concluído',
+                'redirected': 'Redirecionado',
+                'canceled': 'Cancelado',
+                'not_shown': 'Não Compareceu'
+            };
+            return map[s] || s;
+        }
+
+        async function loadSettings() {
+            const res = await fetch('/api/settings');
+            const settings = await res.json();
+            if (settings.institution_name) {
+                document.title = `${settings.institution_name} | Relatórios`;
+            }
+        }
+
+        loadFilters();
+        loadSettings();
+    </script>
+    <style>
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: inherit;
+        }
+
+        @media print {
+
+            .sidebar,
+            .topbar,
+            .no-print {
+                display: none !important;
+            }
+
+            .main-content {
+                margin: 0;
+                padding: 0;
+            }
+
+            .card {
+                box-shadow: none;
+                border: none;
+            }
+        }
+
+        /* Badges styles */
+        .badge.completed {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .badge.in_service {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--primary);
+        }
+
+        .badge.pending {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .badge.calling {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        .badge.canceled {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+    </style>
+</body>
+
+</html>

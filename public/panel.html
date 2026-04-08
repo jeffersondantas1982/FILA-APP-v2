@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PAINEL DE SENHAS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        .panel-body {
+            background: linear-gradient(135deg, #0a1929 0%, #1a237e 100%);
+            color: #ffffff;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+            /* Reset body margin */
+        }
+
+        .panel-header-top {
+            width: 100%;
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.4);
+            border-bottom: 2px solid #ffd600;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        #institution-name-display {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #ffd600;
+            letter-spacing: 1px;
+            margin: 0;
+            line-height: 1;
+        }
+
+        .separator-vertical {
+            width: 2px;
+            height: 30px;
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .date-time-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        #current-date {
+            font-size: 1.5rem;
+            color: #1976d2;
+            font-weight: 500;
+        }
+
+        #current-time {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1565c0;
+            font-family: monospace;
+        }
+
+        #fullscreen-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: auto;
+            font-size: 0.9rem;
+        }
+
+        .panel-container {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            width: 100%;
+            flex-grow: 1;
+            gap: 20px;
+            padding: 0 20px 20px 20px;
+        }
+
+        .main-call {
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(255, 214, 0, 0.3);
+            border: 3px solid #ffd600;
+            transition: all 0.3s;
+        }
+
+        .highlight {
+            background: rgba(255, 214, 0, 0.2);
+            transform: scale(1.02);
+        }
+
+        .main-call h1 {
+            font-size: 3rem;
+            color: #ffd600;
+            margin-bottom: 2rem;
+        }
+
+        #display-number {
+            font-size: 15rem;
+            font-weight: 900;
+            line-height: 1;
+            display: block;
+            margin-bottom: 1rem;
+        }
+
+        .current-sector {
+            font-size: 4rem;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .current-room {
+            font-size: 3rem;
+            font-weight: 500;
+            color: #90caf9;
+        }
+
+        .panel-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .active-services,
+        .history {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 30px;
+            padding: 20px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .active-services h2,
+        .history h2 {
+            text-align: center;
+            color: #60a5fa;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .active-item,
+        .history-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .active-item {
+            border-left: 5px solid #4caf50;
+        }
+
+        .a-number,
+        .h-number {
+            font-size: 2rem;
+            font-weight: 800;
+        }
+
+        .a-sector,
+        .h-sector {
+            font-size: 1rem;
+            color: #1976d2;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .blink {
+            animation: blink-animation 1s steps(5, start) infinite;
+        }
+
+        @keyframes blink-animation {
+            to {
+                visibility: hidden;
+            }
+        }
+
+        /* Audio Enable Overlay */
+        #audio-enable-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        #audio-enable-btn {
+            background: linear-gradient(135deg, #2196f3, #1565c0);
+            color: white;
+            border: none;
+            padding: 30px 60px;
+            font-size: 2rem;
+            border-radius: 20px;
+            cursor: pointer;
+            box-shadow: 0 10px 40px rgba(33, 150, 243, 0.5);
+            transition: all 0.3s ease;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        #audio-enable-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 50px rgba(33, 150, 243, 0.7);
+        }
+
+        #audio-enable-btn i {
+            margin-right: 15px;
+            font-size: 2.5rem;
+        }
+    </style>
+</head>
+
+<body class="panel-body">
+    <div class="panel-header-top">
+        <div class="header-content">
+            <h1 id="institution-name-display">FILA-APP</h1>
+            <div class="separator-vertical"></div>
+            <div class="date-time-container">
+                <span id="current-date">---</span>
+                <span id="current-time">00:00:00</span>
+            </div>
+        </div>
+        <button id="fullscreen-btn" onclick="toggleFullScreen()">⛶ Tela Cheia</button>
+    </div>
+    <div class="panel-container">
+        <!-- Lado Esquerdo: Última Chamada -->
+        <section class="main-call">
+            <h1 class="blink">SENHA ATUAL</h1>
+            <div class="current-ticket">
+                <span id="display-number">---</span>
+                <div id="display-patient-name"
+                    style="font-size: 3rem; color: #10b981; font-weight: 700; margin: 20px 0;"></div>
+                <div class="current-sector" id="display-sector">Aguardando...</div>
+                <div class="current-room" id="display-room"></div>
+            </div>
+        </section>
+
+        <!-- Lado Direito: Atendimento e Histórico -->
+        <section class="panel-sidebar">
+            <div class="active-services">
+                <h2>EM ATENDIMENTO</h2>
+                <div id="active-list">
+                    <!-- Senhas em atendimento aqui -->
+                </div>
+            </div>
+
+            <div class="history">
+                <h2>ÚLTIMAS CHAMADAS</h2>
+                <div id="history-list">
+                    <!-- Senhas aqui -->
+                </div>
+            </div>
+        </section>
+    </div>
+
+    </div>
+
+    <!-- Audio Enable Overlay -->
+    <div id="audio-enable-overlay">
+        <button id="audio-enable-btn" onclick="enableAudio()">
+            <i class="fas fa-volume-up"></i>
+            ATIVAR SOM
+        </button>
+    </div>
+
+    <!-- AUDIO & SPEECH -->
+    <audio id="alert-sound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
+
+    <!-- Connection Status Dot -->
+    <div id="connection-status"
+        style="position: fixed; bottom: 20px; right: 20px; width: 12px; height: 12px; border-radius: 50%; background: #94a3b8; transition: background 0.3s;"
+        title="Status da Conexão"></div>
+
+    <script>
+        const socket = io();
+        let audioEnabled = false;
+
+        // Função para ativar áudio com interação do usuário
+        function enableAudio() {
+            const audio = document.getElementById('alert-sound');
+            const overlay = document.getElementById('audio-enable-overlay');
+
+            // Tocar áudio silencioso para desbloquear
+            audio.volume = 0.01;
+            audio.play().then(() => {
+                audio.pause();
+                audio.volume = 1;
+                audio.currentTime = 0;
+                audioEnabled = true;
+
+                // Testar TTS
+                if (window.speechSynthesis) {
+                    const test = new SpeechSynthesisUtterance('Sistema de som ativado');
+                    test.lang = 'pt-BR';
+                    test.volume = 0.1;
+                    window.speechSynthesis.speak(test);
+                }
+
+                // Remover overlay
+                overlay.style.display = 'none';
+                console.log('✅ Áudio e TTS habilitados!');
+            }).catch(err => {
+                console.error('Erro ao habilitar áudio:', err);
+                alert('Erro ao ativar som. Tente novamente.');
+            });
+        }
+        const history = [];
+
+        // Tentativa automática de liberar áudio na primeira interação qualquer, se necessário
+        document.body.addEventListener('click', () => {
+            const audio = document.getElementById('alert-sound');
+            if (audio.paused) {
+                audio.play().then(() => {
+                    audio.pause();
+                    audio.currentTime = 0;
+                    console.log("Áudio desbloqueado pelo usuário");
+                }).catch((e) => console.log("Falha ao desbloquear áudio: " + e));
+            }
+        }, { once: true });
+
+        socket.on('connect', () => {
+            console.log('Socket Conectado: ' + socket.id);
+            document.getElementById('connection-status').style.backgroundColor = '#10b981'; // Green
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Socket Desconectado');
+            document.getElementById('connection-status').style.backgroundColor = '#ef4444'; // Red
+        });
+
+        socket.on('connect_error', (err) => {
+            console.log('Erro conexão: ' + err.message);
+            document.getElementById('connection-status').style.backgroundColor = '#f59e0b'; // Orange
+        });
+
+        socket.on('ticket_called', (data) => {
+            console.log('CHAMADA RECEBIDA via Socket: ' + data.number);
+
+            // 1. Atualizar Visual (Prioridade Máxima)
+            try {
+                const numEl = document.getElementById('display-number');
+                const sectorEl = document.getElementById('display-sector');
+                const roomEl = document.getElementById('display-room');
+                const nameEl = document.getElementById('display-patient-name');
+                const mainCall = document.querySelector('.main-call');
+
+                if (numEl) numEl.textContent = data.number;
+                if (sectorEl) sectorEl.textContent = data.sector_name;
+                if (roomEl) roomEl.textContent = data.sector_room || '';
+                if (nameEl) nameEl.textContent = data.patient_name || '';
+
+                if (mainCall) {
+                    mainCall.classList.remove('highlight');
+                    void mainCall.offsetWidth; // Trigger reflow
+                    mainCall.classList.add('highlight');
+                    setTimeout(() => mainCall.classList.remove('highlight'), 3000);
+                }
+
+                addToHistory(data);
+            } catch (e) {
+                console.error("Erro ao atualizar visual:", e);
+            }
+
+            // 2. Tocar Áudio (Se falhar, não impede o visual)
+            const audio = document.getElementById('alert-sound');
+            if (audio) {
+                audio.currentTime = 0;
+                audio.play().catch(e => console.warn("Autoplay bloqueado (Áudio):", e));
+            }
+
+            // 3. Falar (TTS)
+            speakTicket(data);
+        });
+
+        function speakTicket(ticket) {
+            if (!window.speechSynthesis) return;
+
+            // Pequeno delay para garantir que o som de alerta não soe junto com a voz
+            setTimeout(() => {
+                try {
+                    window.speechSynthesis.cancel();
+                    const namePart = ticket.patient_name ? `, ${ticket.patient_name}` : '';
+                    const text = `Senha ${ticket.number}${namePart}, ${ticket.sector_name}, ${ticket.sector_room ? 'sala ' + ticket.sector_room : ''}`;
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.lang = 'pt-BR';
+                    utterance.rate = 0.9;
+
+                    const voices = window.speechSynthesis.getVoices();
+                    const ptVoice = voices.find(v => v.lang.includes('pt-BR')) || voices.find(v => v.lang.includes('pt'));
+                    if (ptVoice) utterance.voice = ptVoice;
+
+                    window.speechSynthesis.speak(utterance);
+                } catch (e) {
+                    console.warn("Erro no TTS:", e);
+                }
+            }, 1000);
+        }
+
+        // Carregar vozes
+        window.speechSynthesis.onvoiceschanged = () => {
+            // carregar silenciosamente
+        };
+
+        socket.on('ticket_started', (data) => {
+            addInService(data);
+        });
+
+        socket.on('ticket_completed', (data) => {
+            const el = document.getElementById(`active-${data.id}`);
+            if (el) el.remove();
+        });
+
+        socket.on('queue_reset', () => {
+            document.getElementById('display-number').textContent = '---';
+            document.getElementById('display-sector').textContent = 'Aguardando...';
+            document.getElementById('display-room').textContent = '';
+            document.getElementById('history-list').innerHTML = '';
+            document.getElementById('active-list').innerHTML = '';
+        });
+
+        function addInService(ticket) {
+            const list = document.getElementById('active-list');
+            // Evitar duplicados
+            if (document.getElementById(`active-${ticket.id}`)) return;
+
+            const item = document.createElement('div');
+            item.id = `active-${ticket.id}`;
+            item.className = 'active-item';
+            item.innerHTML = `
+                <span class="a-number">${ticket.number}</span>
+                <span class="a-sector">${ticket.sector_name}</span>
+            `;
+            list.prepend(item);
+        }
+
+        async function loadActiveTickets() {
+            try {
+                const res = await fetch('/api/tickets/active');
+                if (!res.ok) throw new Error('Falha ao carregar');
+                const tickets = await res.json();
+                const list = document.getElementById('active-list');
+                list.innerHTML = '';
+                tickets.forEach(t => addInService(t));
+                document.getElementById('connection-status').style.border = '2px solid white'; // Visual clue data loaded
+                console.log("Tickets ativos carregados");
+            } catch (e) {
+                console.error("Erro ao carregar tickets ativos:", e);
+            }
+        }
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+                document.getElementById('fullscreen-btn').textContent = "✖ Sair";
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                    document.getElementById('fullscreen-btn').textContent = "⛶ Tela Cheia";
+                }
+            }
+        }
+
+        function addToHistory(ticket) {
+            const list = document.getElementById('history-list');
+            // Check for duplicates in history top
+            const first = list.firstElementChild;
+            if (first) {
+                const num = first.querySelector('.h-number').textContent;
+                if (num === ticket.number) return; // Prevent duplicate recent history
+            }
+
+            const item = document.createElement('div');
+            item.className = 'history-item';
+            item.innerHTML = `
+                <span class="h-number">${ticket.number}</span>
+                <span class="h-sector">${ticket.sector_name}</span>
+            `;
+
+            list.prepend(item);
+            if (list.children.length > 5) {
+                list.removeChild(list.lastChild);
+            }
+        }
+
+        async function loadSettings() {
+            try {
+                const res = await fetch('/api/settings');
+                const settings = await res.json();
+                if (settings.institution_name) {
+                    document.getElementById('institution-name-display').textContent = settings.institution_name.toUpperCase();
+                    document.title = `${settings.institution_name} | PAINEL`;
+                }
+            } catch (e) { console.warn("Erro ao carregar settings", e); }
+        }
+
+        function updateClock() {
+            const now = new Date();
+            const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('current-date').textContent = now.toLocaleDateString('pt-BR', dateOptions).toUpperCase();
+            document.getElementById('current-time').textContent = now.toLocaleTimeString('pt-BR', { hour12: false });
+        }
+
+        setInterval(updateClock, 1000);
+        updateClock();
+        loadSettings();
+        loadActiveTickets();
+    </script>
+</body>
+
+</html>
